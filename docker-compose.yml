@@ -3,6 +3,13 @@ networks:
     driver: bridge
 
 services:
+  redis:
+    image: redis:7
+    container_name: myweb-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork
   app:
     build: .
     ports:
@@ -34,3 +41,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
