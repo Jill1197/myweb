@@ -23,6 +23,5 @@
     "multer": "^2.0.2",
     "sqlite3": "^5.1.7",
     "tmp": "^0.2.5"
-  },
-  "devDependencies": {}
+  }
 }

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch: <%= media.topic %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .video-container iframe,
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .overlay-play {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .overlay-play button {
+      background: #06b6d4;
+      color: #fff;
+      font-size: 26px;
+      font-weight: bold;
+      padding: 20px 40px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .overlay-play button:hover {
+      background: #0891b2;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-gray-300 font-sans">
+
+  <!-- header -->
+  <%- include('components/header') %>
+  <!-- Main Layout -->
+  <main class="container mx-auto px-6 py-8">
+    <%- include('components/advert', { numberOfAds: 10 }) %>
+    <div class="flex flex-col lg:flex-row gap-8 mt-5">
+      
+      <!-- Video Content -->
+      <div class="w-full lg:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
+        <!-- Player -->
+        <div id="player-api" class="video-container relative">
+          <div class="overlay-play">
+            <button>เล่นวิดีโอ</button>
+          </div>
+
+          <div id="ads-container"></div>
+
+          <!-- Skip Button -->
+          <button id="skipBtn"
+            class="absolute bottom-4 right-4 bg-red-600/70 text-white px-10 py-2 rounded shadow hover:bg-red-500 transition hidden font-semibold">
+            ข้าม
+          </button>
+
+          <!-- Main Video -->
+          <iframe id="apiVideo" src="" allowfullscreen class="mainVideo rounded-lg shadow-md"
+            style="display:none;"></iframe>
+        </div>
+
+        <!-- Video Title & Categories -->
+        <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 mt-4">
+          <%= media.topic %>
+        </h1>
+        จำนวนผู้ชม: <span class="text-yellow-400 font-semibold">
+          <%= media.views || 0 %>
+        </span> คน
+        <div class="mt-4">
+          <h4 class="text-1xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 ">
+            หมวดหมู่:
+            <% if (media.tag) { %>
+              <% media.tag.split(',').forEach(function(t) { %>
+                <a href="/tag/<%= t %>"
+                  class="px-2 py-1 bg-cyan-600 rounded-full text-white mr-2 hover:bg-cyan-500 transition">
+                  <%= t %>
+                </a>
+              <% }) %>
+            <% } %>
+          </h4>
+        </div>
+
+        <div class="mt-8">
+          <a href="/" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500 transition font-semibold">
+            Back to list
+          </a>
+        </div>
+
+        <!-- Random Videos Section -->
+        <div class="mt-8 p-4 ">
+          <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
+            วิดีโออื่น ๆ ที่คุณอาจชอบ 🎲
+          </h3>
+
+          <% if (typeof randomVideos !=='undefined' && randomVideos.length> 0) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+              <% randomVideos.forEach(function(video) { %>
+                <div class="media-item">
+                  <a href="/watch?id=<%= video.id %>">
+                    <div class="w-full h-30 bg-black flex items-center justify-center rounded-lg shadow-md overflow-hidden">
+                      <img
+                        src="<%= video.image_embed %>"
+                        alt="<%= video.topic %>"
+                        class="object-contain max-h-full max-w-full hover:opacity-80 transition"
+                        loading="lazy"
+                        onerror="this.src='/images/placeholder.png'"
+                      />
+                    </div>
+                  </a>
+                  <h4 class="text-sm text-white mt-2 font-semibold truncate">
+                    <%= video.topic %>
+                  </h4>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <p class="text-gray-400">ยังไม่มีวิดีโอแนะนำ</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- sidebar -->
+      <aside class="w-full lg:w-1/4">
+        <!-- Tag List -->
+        <div class="bg-gray-800 p-4 rounded-lg shadow-lg h-[620px]">
+          <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
+            ประเภท
+          </h3>
+          <ul id="tagList" class="max-h-full overflow-y-auto space-y-2 px-2 py-1">
+            <li><span class="text-gray-400">กำลังโหลด...</span></li>
+          </ul>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- Script -->
+  <script>
+    const overlay = document.querySelector("#player-api .overlay-play");
+    const adsContainer = document.getElementById("ads-container");
+    const skipBtn = document.getElementById("skipBtn");
+    const apiVideo = document.getElementById("apiVideo");
+
+    let skipTimer = null;
+    let adsElements = [];
+    let currentAd = 0;
+
+    // ดึง Tag
+    fetch('/api/v1/tags')
+      .then(res => res.json())
+      .then(tags => {
+        const ul = document.getElementById('tagList');
+        ul.innerHTML = '';
+
+        if (!tags || tags.length === 0) {
+          ul.innerHTML = '<li><a href="#" class="hover:text-cyan-400">ไม่มีประเภท</a></li>';
+          return;
+        }
+
+        tags.slice(0, 5).forEach(tag => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = `/tag/${encodeURIComponent(tag)}`;
+          a.textContent = tag;
+          a.className = 'hover:text-cyan-400 block px-2 py-1 rounded hover:bg-gray-700 transition';
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('tagList').innerHTML =
+          '<li><a href="#" class="hover:text-cyan-400">โหลดข้อมูลไม่สำเร็จ</a></li>';
+      });
+
+    // ดึง Ads active
+    fetch('/api/v1/videos/active')
+      .then(res => res.json())
+      .then(data => {
+        adsElements = data.map((ad, index) => {
+          const videoEl = document.createElement('video');
+          videoEl.id = `ads${index}`;
+          videoEl.className = "rounded-lg shadow-md";
+          videoEl.playsInline = true;
+          videoEl.webkitPlaysInline = true;
+
+          const source = document.createElement('source');
+          source.src = `/videos/${ad.files_name}`;
+          source.type = "video/mp4";
+          videoEl.appendChild(source);
+
+          videoEl.style.display = 'none';
+          adsContainer.appendChild(videoEl);
+          return videoEl;
+        });
+
+        overlay.onclick = () => {
+          overlay.style.display = "none";
+          playNextAd();
+        };
+      });
+
+    function playNextAd() {
+      if (currentAd >= adsElements.length) {
+        startMainVideo();
+        return;
+      }
+
+      const adElement = adsElements[currentAd];
+      adElement.style.display = "block";
+      adElement.currentTime = 0;
+      adElement.play();
+      skipBtn.style.display = "none";
+
+      skipTimer = setTimeout(() => {
+        skipBtn.style.display = "inline-block";
+        skipBtn.onclick = () => {
+          adElement.pause();
+          adElement.style.display = "none";
+          skipBtn.style.display = "none";
+          clearTimeout(skipTimer);
+          currentAd++;
+          playNextAd();
+        };
+      }, 3000);
+
+      adElement.onended = () => {
+        adElement.style.display = "none";
+        skipBtn.style.display = "none";
+        clearTimeout(skipTimer);
+        currentAd++;
+        playNextAd();
+      };
+    }
+
+    function startMainVideo() {
+      apiVideo.style.display = "block";
+      const videoId = <%= media.id %>;
+      fetch(`/api/v1/video-search/${videoId}`)
+        .then(res => res.json())
+        .then(data => {
+          apiVideo.src = data.video_embed;
+
+          // นับ view
+          fetch(`/api/v1/media/${videoId}/view`, { method: 'POST' })
+            .catch(err => console.error('Error counting view:', err));
+        });
+    }
+  </script>
+</body>
+</html>

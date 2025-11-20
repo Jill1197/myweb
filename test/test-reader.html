@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Render Video (iframe) — CyberLumina</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{background:linear-gradient(180deg,#071020 0%, #071826 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:1100px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;box-shadow:0 6px 30px rgba(2,6,23,0.6);overflow:hidden}
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .title{font-size:16px;font-weight:600}
+    .meta{font-size:13px;color:var(--muted)}
+
+    /* responsive iframe container (16:9) */
+    .video-wrap{position:relative;padding-top:56.25%;background:#000}
+    iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+
+    .controls{display:flex;gap:8px;align-items:center;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.02);background:linear-gradient(180deg,transparent, rgba(0,0,0,0.02))}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;font-size:14px;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#022; border:0}
+    .note{padding:12px 20px;color:var(--muted);font-size:13px}
+
+    @media (max-width:640px){.header{padding:12px}.controls{padding:10px}.title{font-size:14px}}
+  </style>
+</head>
+<body>
+  <div class="card" role="region" aria-label="video player card">
+    <div class="header">
+      <div>
+        <!-- <div class="title">CyberLumina Player</div>
+        <div class="meta">ฝังวิดีโอด้วย &lt;iframe&gt; — ปรับแต่งได้ตามต้องการ</div> -->
+      </div>
+      <!-- <div class="meta">Rendered: <strong id="timestamp"></strong></div> -->
+    </div>
+
+    <div class="video-wrap">
+      <!-- ใส่ลิงก์ iframe ที่ผู้ใช้ให้มา -->
+      <iframe id="cyber-iframe"
+              src="https://cyberlumina.com/player/75abd544-5b20-49ae-82c2-ac4f9fad2acf"
+              title="CyberLumina Video Player"
+              allow="autoplay; fullscreen; encrypted-media"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              allowfullscreen
+      ></iframe>
+    </div>
+
+    <div class="controls">
+      <div style="flex:1"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // แทรกเวลาเรนเดอร์แบบง่ายๆ
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('th-TH');
+
+    const iframe = document.getElementById('cyber-iframe');
+    const openBtn = document.getElementById('open-new');
+    const copyBtn = document.getElementById('copy-link');
+    const fullBtn = document.getElementById('toggle-full');
+    const fallback = document.getElementById('fallback');
+
+    openBtn.addEventListener('click', () => window.open(iframe.src, '_blank'));
+    copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(iframe.src); alert('คัดลอกลิงก์แล้ว'); }
+      catch(e){ alert('ไม่สามารถคัดลอกได้ — กรุณาคัดลอกด้วยตนเอง: ' + iframe.src) }
+    });
+
+    fullBtn.addEventListener('click', () => {
+      if (iframe.requestFullscreen) iframe.requestFullscreen();
+      else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+      else alert('เบราว์เซอร์นี้ไม่รองรับคำสั่ง fullscreen ผ่าน iframe');
+    });
+
+    // ถ้า iframe ถูกบล็อก (X-Frame-Options), แสดงข้อความใน console
+    iframe.addEventListener('error', ()=> console.warn('iframe load error — อาจมีการป้องกันการฝัง (X-Frame-Options)'));
+  </script>
+</body>
+</html>

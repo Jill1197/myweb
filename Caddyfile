@@ -1,0 +1,40 @@
+av789vk.xyz, www.jav789vk.xyz {
+
+    encode gzip
+
+    tls MorrisJill1197@proton.me {
+        protocols tls1.2 tls1.3
+    }
+
+    header {
+        # ป้องกัน Clickjacking
+        X-Frame-Options "DENY"
+
+        # ป้องกัน XSS
+        X-XSS-Protection "1; mode=block"
+
+        # ป้องกัน MIME sniffing
+        X-Content-Type-Options "nosniff"
+
+        # ป้องกันข้อมูลรั่วขณะ redirect
+        Referrer-Policy "strict-origin-when-cross-origin"
+
+        # ใช้ HTTPS ตลอดเวลา
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+        # Content Security Policy (ลด XSS 90%)
+        Content-Security-Policy "
+            default-src 'self';
+            script-src 'self';
+            style-src 'self' https://cdn.tailwindcss.com;
+            img-src 'self' data:;
+            font-src 'self';
+            object-src 'none';
+            connect-src 'self';
+            frame-ancestors 'none';
+        "
+    }
+
+    # Proxy ไปยัง container ชื่อ app port 3000
+    reverse_proxy app:3000
+}

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Render Image — 303-7</title>
+  <style>
+    :root{--bg:#0f1724;--card:#071028;--muted:#9fb0c8;--accent:#06b6d4}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:#e7f0fb;background:linear-gradient(180deg,#07101a 0%, #081524 100%)}
+    .wrap{max-width:980px;margin:36px auto;padding:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .title{font-weight:700;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .img-wrap{display:flex;align-items:center;justify-content:center;background:#02060a;border-radius:8px;padding:12px}
+    img{max-width:100%;height:auto;border-radius:6px;display:block}
+
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#022;border:0}
+
+    .info{margin-top:12px;color:var(--muted);font-size:13px}
+
+    @media (max-width:640px){.wrap{padding:12px}.title{font-size:16px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="meta">
+        <div>
+          <div class="title">ภาพ: 303-7 (render)</div>
+          <div class="muted">แสดงภาพและข้อมูลเบื้องต้น — โหลดจาก URL ภายนอก</div>
+        </div>
+        <div style="margin-left:auto" class="muted">Rendered: <strong id="ts"></strong></div>
+      </div>
+
+      <div class="img-wrap" id="imgWrap">
+        <img id="mainImg" src="https://xn--72c6c2a3an.com/wp-content/uploads/2024/10/303-7-553x360.png" alt="303-7" loading="lazy" />
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="copyLink">คัดลอกลิงก์</button>
+        <button class="btn" id="openNew">เปิดในแท็บใหม่</button>
+        <button class="btn primary" id="download">ดาวน์โหลด</button>
+      </div>
+
+      <div class="info" id="info">กำลังโหลดข้อมูลภาพ...</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('ts').textContent = new Date().toLocaleString('th-TH');
+    const img = document.getElementById('mainImg');
+    const info = document.getElementById('info');
+    const src = img.src;
+
+    // เมื่อโหลดเสร็จ ให้แสดงขนาด และเวลา
+    img.addEventListener('load', ()=>{
+      info.textContent = `URL: ${src} — ขนาดภาพ: ${img.naturalWidth} x ${img.naturalHeight} px`;
+    });
+    img.addEventListener('error', ()=>{
+      info.textContent = 'เกิดข้อผิดพลาดขณะโหลดภาพ — อาจถูกบล็อกด้วย CORS หรือไฟล์ไม่อยู่';
+    });
+
+    document.getElementById('copyLink').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(src); alert('คัดลอกลิงก์แล้ว'); }
+      catch(e){ alert('ไม่สามารถคัดลอกอัตโนมัติได้ — กรุณาคัดลอกลิงก์ด้วยตนเอง: ' + src) }
+    });
+
+    document.getElementById('openNew').addEventListener('click', ()=> window.open(src,'_blank'));
+
+    document.getElementById('download').addEventListener('click', async ()=>{
+      try{
+        // พยายาม fetch เป็น blob เพื่อดาวน์โหลด (อาจติด CORS)
+        const resp = await fetch(src, {mode: 'cors'});
+        if(!resp.ok) throw new Error('ไม่สามารถดาวน์โหลด: ' + resp.status);
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = src.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }catch(err){
+        // fallback: เปิดรูปในแท็บใหม่ (ผู้ใช้จะสามารถบันทึกได้จากเบราว์เซอร์)
+        alert('ดาวน์โหลดอัตโนมัติล้มเหลว (อาจเป็นเรื่อง CORS) — จะเปิดภาพในแท็บใหม่แทน');
+        window.open(src,'_blank');
+      }
+    });
+  </script>
+</body>
+</html>

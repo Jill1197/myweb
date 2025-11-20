@@ -1,0 +1,74 @@
+<header class="bg-gray-800 shadow-lg sticky top-0 z-50">
+  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+      <!-- <img src="/image/Logo.png" alt="Logo" class="w-[60px] h-[60px] object-contain rounded-full" /> -->
+      <h1 class="text-2xl font-bold text-white tracking-wider">
+        Jav<span class="text-cyan-400">789VK</span>
+      </h1>
+    </div>
+
+    <!-- Desktop Menu -->
+    <div class="hidden md:flex items-center gap-4">
+      <a href="/" class="hover:text-cyan-400 transition">หน้าแรก</a>
+      <a href="/new-videos" class="hover:text-cyan-400 transition">ใหม่ล่าสุด</a>
+      <a href="/most-popular" class="hover:text-cyan-400 transition">จัดอันดับ</a>
+      <a href="/tag/jav" class="block px-4 py-2 hover:bg-gray-600 transition">AV</a>
+      <a href="/tag/หลุดทางบ้าน" class="block px-4 py-2 hover:bg-gray-600 transition">หลุดทางบ้าน</a>
+      <!-- <a href="/add" class="hover:text-cyan-400 transition">Add New Media</a> -->
+
+      <!-- Search Form -->
+      <form action="/search" method="GET" class="flex items-center gap-2">
+        <input type="text" name="q" placeholder="ค้นหา..."
+          class="px-3 py-1 bg-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        <button type="submit" class="px-3 py-1 bg-cyan-500 text-white rounded-full hover:bg-cyan-600 transition">
+          Search
+        </button>
+      </form>
+    </div>
+
+
+    <!-- Mobile Hamburger -->
+    <button id="menu-btn" class="md:hidden flex items-center text-gray-300 focus:outline-none">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu"
+    class="max-h-0 overflow-hidden transition-all duration-700 ease-in-out md:hidden bg-gray-700 border-t border-gray-600">
+    <a href="/" class="block px-4 py-2 hover:bg-gray-600 transition">หน้าแรก</a>
+    <a href="/new-videos" class="block px-4 py-2 hover:bg-gray-600 transition">ใหม่ล่าสุด</a>
+    <a href="/most-popular" class="block px-4 py-2 hover:bg-gray-600 transition">จัดอันดับ</a>
+    <a href="/tag/jav" class="block px-4 py-2 hover:bg-gray-600 transition">AV</a>
+    <a href="/tag/หลุดทางบ้าน" class="block px-4 py-2 hover:bg-gray-600 transition">หลุดทางบ้าน</a>
+    <!-- <a href="/add" class="block px-4 py-2 hover:bg-gray-600 transition">Add New Media</a> -->
+    <div class="p-4">
+      <form action="/search" method="GET" class="flex items-center gap-2">
+        <input type="text" name="q" placeholder="ค้นหา..."
+          class="px-3 py-1 bg-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+        <button type="submit" class="px-3 py-1 bg-cyan-500 text-white rounded-full hover:bg-cyan-600 transition">
+          Search
+        </button>
+        <button type=""></button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<script>
+  const menuBtn = document.getElementById("menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+
+  menuBtn.addEventListener("click", () => {
+    if (mobileMenu.classList.contains("max-h-0")) {
+      mobileMenu.classList.remove("max-h-0");
+      mobileMenu.classList.add("max-h-[500px]"); // ขยายสูงสุดเวลาเปิด
+    } else {
+      mobileMenu.classList.add("max-h-0");
+      mobileMenu.classList.remove("max-h-[500px]");
+    }
+  });
+</script>

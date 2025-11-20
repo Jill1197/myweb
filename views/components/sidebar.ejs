@@ -1,0 +1,142 @@
+<!-- ================== Left sidebar Ads ================== -->
+<aside class="hidden lg:flex flex-col gap-4 fixed left-4 top-1/2 -translate-y-1/2 z-20 w-40" id="leftsidebar">
+  <p class="text-gray-400">กำลังโหลดโฆษณา...</p>
+</aside>
+
+<!-- ================== Right sidebar Ads ================== -->
+<aside class="hidden lg:flex flex-col gap-4 fixed right-4 top-1/2 -translate-y-1/2 z-80 w-40" id="rightsidebar">
+  <p class="text-gray-400">กำลังโหลดโฆษณา...</p>
+</aside>
+
+<!-- ================== Bottom Bar Ads ================== -->
+<footer class="fixed bottom-0 left-0 w-full bg-opacity-90 z-30 p-2 shadow-lg">
+  <div class="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-4" id="bottomBar">
+    <p class="text-gray-400 col-span-full">กำลังโหลดโฆษณา...</p>
+  </div>
+</footer>
+
+<script>
+  function closeAd(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
+
+  fetch('/api/v1/ads')
+    .then(res => res.json())
+    .then(ads => {
+      const leftContainer = document.getElementById('leftsidebar');
+      const rightContainer = document.getElementById('rightsidebar');
+      const bottomContainer = document.getElementById('bottomBar');
+
+      // เคลียร์ placeholder
+      leftContainer.innerHTML = '';
+      rightContainer.innerHTML = '';
+      bottomContainer.innerHTML = '';
+
+      // กรองเฉพาะ active = 1
+      const activeAds = ads.filter(ad => ad.active === 1);
+
+      // ---------------- Left ----------------
+      activeAds.filter(ad => ad.title === 'left').forEach((ad, i) => {
+        const div = document.createElement('div');
+        div.className = 'h-64 relative w-full rounded-lg flex items-center justify-center overflow-hidden';
+        div.id = `left${i + 1}`;
+
+        const a = document.createElement('a');
+        a.href = normalizeUrl(ad.click_url);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+
+        const img = document.createElement('img');
+        img.src = ad.video_url || '#';
+        img.alt = ad.title;
+        img.className = 'w-full h-full object-contain';
+
+        a.appendChild(img);
+
+        const btn = document.createElement('button');
+        btn.innerText = 'X';
+        btn.className = 'absolute top-1 right-1 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500';
+        btn.onclick = () => closeAd(div.id);
+
+        div.appendChild(a);
+        div.appendChild(btn);
+        leftContainer.appendChild(div);
+      });
+
+      // ---------------- Right ----------------
+      activeAds.filter(ad => ad.title === 'right').forEach((ad, i) => {
+        const div = document.createElement('div');
+        div.className = 'h-64 relative w-full rounded-lg flex items-center justify-center overflow-hidden';
+        div.id = `right${i + 1}`;
+
+        const a = document.createElement('a');
+        a.href = normalizeUrl(ad.click_url);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+
+        const img = document.createElement('img');
+        img.src = ad.video_url || '#';
+        img.alt = ad.title;
+        img.className = 'w-full h-full object-contain';
+
+        a.appendChild(img);
+
+        const btn = document.createElement('button');
+        btn.innerText = 'X';
+        btn.className = 'absolute top-1 right-1 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500';
+        btn.onclick = () => closeAd(div.id);
+
+        div.appendChild(a);
+        div.appendChild(btn);
+        rightContainer.appendChild(div);
+      });
+
+      // ---------------- Bottom ----------------
+      activeAds.filter(ad => ad.title === 'bottom').forEach((ad, i) => {
+        const div = document.createElement('div');
+        div.className = 'h-20 relative w-full rounded-lg flex items-center justify-center overflow-hidden';
+        div.id = `bottom${i + 1}`;
+
+        const a = document.createElement('a');
+        a.href = normalizeUrl(ad.click_url);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+
+        const img = document.createElement('img');
+        img.src = ad.video_url || '#';
+        img.alt = ad.title;
+        img.className = 'w-full h-full object-contain';
+
+        a.appendChild(img);
+
+        const btn = document.createElement('button');
+        btn.innerText = 'X';
+        btn.className = 'absolute top-1 right-1 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500';
+        btn.onclick = () => closeAd(div.id);
+
+        div.appendChild(a);
+        div.appendChild(btn);
+        bottomContainer.appendChild(div);
+      });
+
+      // ถ้าไม่มี Ads แต่ละส่วน
+      if (leftContainer.innerHTML === '') leftContainer.innerHTML = '<p class="text-gray-400">ไม่มีโฆษณา</p>';
+      if (rightContainer.innerHTML === '') rightContainer.innerHTML = '<p class="text-gray-400">ไม่มีโฆษณา</p>';
+      if (bottomContainer.innerHTML === '') bottomContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">ไม่มีโฆษณา</p>';
+    })
+    .catch(err => {
+      console.error('โหลดโฆษณาไม่สำเร็จ:', err);
+      document.getElementById('leftsidebar').innerHTML = '<p class="text-gray-400">โหลดโฆษณาไม่สำเร็จ</p>';
+      document.getElementById('rightsidebar').innerHTML = '<p class="text-gray-400">โหลดโฆษณาไม่สำเร็จ</p>';
+      document.getElementById('bottomBar').innerHTML = '<p class="text-gray-400 col-span-full text-center">โหลดโฆษณาไม่สำเร็จ</p>';
+    });
+
+  function normalizeUrl(url) {
+    if (!url) return '#';
+    return url.startsWith('http://') || url.startsWith('https://')
+      ? url
+      : 'https://' + url;
+  }
+
+</script>

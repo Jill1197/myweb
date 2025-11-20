@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Tags</title>
+  <style>
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .tag {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input {
+      width: 300px;
+      padding: 5px;
+    }
+    ul.suggestions {
+      border: 1px solid #ccc;
+      max-height: 150px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      width: 300px;
+      position: absolute;
+      background: white;
+      z-index: 100;
+      display: none;
+    }
+    ul.suggestions li {
+      padding: 5px;
+      cursor: pointer;
+    }
+    ul.suggestions li:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<h3>ติด Tag ให้กับวิดีโอ</h3>
+
+<div style="position: relative;">
+  <input type="text" id="tagInput" placeholder="พิมพ์ tag หรือเลือกจากรายการ">
+  <ul class="suggestions" id="suggestions"></ul>
+</div>
+
+<div class="tags" id="tagContainer"></div>
+
+<script>
+const tagInput = document.getElementById('tagInput');
+const tagContainer = document.getElementById('tagContainer');
+const suggestionsEl = document.getElementById('suggestions');
+
+// tag ที่มีอยู่แล้ว
+let availableTags = ['Action', 'Comedy', 'Drama', 'Romance', 'Sci-Fi'];
+let tags = [];
+
+function renderTags() {
+  tagContainer.innerHTML = '';
+  tags.forEach((tag, index) => {
+    const tagEl = document.createElement('div');
+    tagEl.classList.add('tag');
+    tagEl.innerHTML = `${tag} <button onclick="removeTag(${index})">&times;</button>`;
+    tagContainer.appendChild(tagEl);
+  });
+}
+
+function removeTag(index) {
+  tags.splice(index, 1);
+  renderTags();
+}
+
+function showSuggestions(value = '') {
+  suggestionsEl.innerHTML = '';
+  const filtered = availableTags.filter(t => !tags.includes(t) && t.toLowerCase().includes(value.toLowerCase()));
+  if(filtered.length > 0) {
+    filtered.forEach(tag => {
+      const li = document.createElement('li');
+      li.textContent = tag;
+      li.onclick = () => {
+        addTag(tag);
+        suggestionsEl.style.display = 'none';
+      }
+      suggestionsEl.appendChild(li);
+    });
+    suggestionsEl.style.display = 'block';
+  } else {
+    suggestionsEl.style.display = 'none';
+  }
+}
+
+function addTag(tag) {
+  if(!tags.includes(tag)) {
+    tags.push(tag);
+    if(!availableTags.includes(tag)) availableTags.push(tag); // เพิ่ม tag ใหม่ใน list
+    renderTags();
+    tagInput.value = '';
+  }
+}
+
+// แสดง suggestions ตอน focus
+tagInput.addEventListener('focus', () => showSuggestions(''));
+
+// แสดง suggestions ตาม input
+tagInput.addEventListener('input', () => showSuggestions(tagInput.value));
+
+// เพิ่ม tag เมื่อกด Enter
+tagInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') {
+    e.preventDefault();
+    const value = tagInput.value.trim();
+    if(value) addTag(value);
+    suggestionsEl.style.display = 'none';
+  }
+});
+
+// ซ่อน suggestions เมื่อคลิกข้างนอก
+document.addEventListener('click', (e) => {
+  if(e.target !== tagInput) suggestionsEl.style.display = 'none';
+});
+</script>
+
+</body>
+</html>

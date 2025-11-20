@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Ads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-300 font-sans min-h-screen">
+
+    <main class="container mx-auto px-6 py-8">
+        <h1 class="text-3xl font-bold text-white mb-6">จัดการโฆษณา (Ads)</h1>
+        <h4 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyan-400 pl-3"><a href="/manage">manage</a></h4>
+        <h5 class="text-2xl text-yellow-400 mb-6 border-l-4 border-cyan-400 pl-3">
+            หมายเหตุ * title ads = โฆษณาตรงกลาง <br>| active Yes = เปิด | active No = ปิด
+        </h5>
+
+
+
+
+        <button id="btnAdd" class="mb-4 px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-500 transition">
+            + Add New Ad
+        </button>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-gray-800 rounded-lg overflow-hidden">
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-white">ID</th>
+                        <th class="px-4 py-2 text-left text-white">Title</th>
+                        <th class="px-4 py-2 text-left text-white">Preview</th>
+                        <th class="px-4 py-2 text-left text-white">Video URL</th>
+                        <th class="px-4 py-2 text-left text-white">Click URL</th>
+                        <th class="px-4 py-2 text-left text-white">Duration</th>
+                        <th class="px-4 py-2 text-left text-white">Active</th>
+                        <th class="px-4 py-2 text-left text-white">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% ads.forEach(ad=> { %>
+                        <tr class="border-b border-gray-700 hover:bg-gray-700 transition" data-id="<%= ad.id %>"
+                            data-title="<%= ad.title %>" data-video_url="<%= ad.video_url %>"
+                            data-click_url="<%= ad.click_url %>" data-duration="<%= ad.duration %>"
+                            data-active="<%= ad.active %>">
+                            <td class="px-4 py-2">
+                                <%= ad.id %>
+                            </td>
+                            <td class="px-4 py-2">
+                                <%= ad.title %>
+                            </td>
+                            <td class="px-4 py-2">
+                                <div class="w-40 h-24 overflow-hidden rounded shadow">
+                                    <iframe src="<%= ad.video_url %>" class="w-full h-full" frameborder="0"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            </td>
+
+                            <td class="px-4 py-2 truncate max-w-xs">
+                                <%= ad.video_url %>
+                            </td>
+                            <td class="px-4 py-2 truncate max-w-xs">
+                                <%= ad.click_url %>
+                            </td>
+                            <td class="px-4 py-2">
+                                <%= ad.duration %>
+                            </td>
+                            <td class="px-4 py-2">
+                                <%= ad.active ? 'Yes' : 'No' %>
+                            </td>
+                            <td class="px-4 py-2 flex gap-2">
+                                <button class="btnEdit px-2 py-1 bg-yellow-500 rounded hover:bg-yellow-400"
+                                    data-id="<%= ad.id %>">Edit</button>
+                                <button class="btnDelete px-2 py-1 bg-red-600 rounded hover:bg-red-500"
+                                    data-id="<%= ad.id %>">Delete</button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- Modal Add/Edit -->
+        <div id="modalForm" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden">
+            <div class="bg-gray-800 p-6 rounded-lg w-full max-w-lg">
+                <h2 class="text-xl font-bold text-white mb-4" id="modalTitle">Add New Ad</h2>
+                <form id="adForm" class="space-y-4">
+                    <input type="hidden" id="adId">
+                    <div>
+                        <label class="block mb-1 text-white">Title</label>
+                        <input type="text" id="title" class="w-full px-3 py-2 rounded bg-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-white">Video URL</label>
+                        <input type="text" id="video_url" class="w-full px-3 py-2 rounded bg-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-white">Click URL</label>
+                        <input type="text" id="click_url" class="w-full px-3 py-2 rounded bg-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-white">Duration (seconds)</label>
+                        <input type="number" id="duration" class="w-full px-3 py-2 rounded bg-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-white">Active</label>
+                        <select id="active" class="w-full px-3 py-2 rounded bg-gray-700 text-white">
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" id="btnClose"
+                            class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-cyan-600 rounded hover:bg-cyan-500">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const modal = document.getElementById('modalForm');
+        const btnAdd = document.getElementById('btnAdd');
+        const btnClose = document.getElementById('btnClose');
+        const adForm = document.getElementById('adForm');
+
+        // เปิด Modal Add
+        btnAdd.addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = "Add New Ad";
+            adForm.reset();
+            document.getElementById('adId').value = "";
+            modal.classList.remove('hidden');
+        });
+
+        // ปิด Modal
+        btnClose.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        // Edit
+        document.querySelectorAll('.btnEdit').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tr = btn.closest('tr');
+                document.getElementById('modalTitle').textContent = "Edit Ad";
+                document.getElementById('adId').value = tr.dataset.id;
+                document.getElementById('title').value = tr.dataset.title;
+                document.getElementById('video_url').value = tr.dataset.video_url;
+                document.getElementById('click_url').value = tr.dataset.click_url;
+                document.getElementById('duration').value = tr.dataset.duration;
+                document.getElementById('active').value = tr.dataset.active == "1" ? 1 : 0;
+                modal.classList.remove('hidden');
+            });
+        });
+
+        // Delete
+        document.querySelectorAll('.btnDelete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (confirm("ยืนยันการลบ ad นี้?")) {
+                    fetch(`/api/v1/ads/${btn.dataset.id}`, { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(() => location.reload())
+                        .catch(err => console.error(err));
+                }
+            });
+        });
+
+        // Submit Form
+        adForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('adId').value;
+            const payload = {
+                title: document.getElementById('title').value,
+                video_url: document.getElementById('video_url').value,
+                click_url: document.getElementById('click_url').value,
+                duration: parseInt(document.getElementById('duration').value),
+                active: parseInt(document.getElementById('active').value)
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/v1/ads/${id}` : '/api/v1/ads';
+
+            fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(() => location.reload())
+                .catch(err => console.error(err));
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch: <%= media.topic %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .video-container iframe,
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-gray-300 font-sans">
+  <!-- ✅ header -->
+  <header class="bg-gray-800 shadow-lg sticky top-0 z-10">
+    <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-white tracking-wider">
+        Thai<span class="text-cyan-400">YedVK</span>
+      </h1>
+      <div class="hidden md:flex items-center space-x-4 gap-4">
+        <a href="/" class="hover:text-cyan-400">หน้าแรก</a>
+        <a href="#" class="hover:text-cyan-400">ใหม่ล่าสุด</a>
+        <a href="#" class="hover:text-cyan-400">จัดอันดับ</a>
+        <a href="/add" class="hover:text-cyan-400">Add New Media</a>
+        <input type="text" placeholder="ค้นหา..."
+          class="px-3 py-1 bg-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+      </div>
+    </nav>
+  </header>
+
+  <!-- ✅ Layout -->
+  <main class="container mx-auto px-6 py-8">
+    <div class="flex flex-col lg:flex-row gap-8 mt-5">
+      
+      <!-- ✅ Main content -->
+      <div class="w-full lg:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
+        <!-- Ads -->
+        <div id="ads" class="video-container relative">
+          <video id="adVideo" class="rounded-lg shadow-md" controls playsinline webkit-playsinline>
+            <source src="/videos/ads.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <button id="skipBtn"
+            class="absolute bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-500 transition hidden font-semibold">
+            ข้าม
+          </button>
+        </div>
+
+        <!-- Video -->
+        <div id="video" class="video-container" style="display:none;">
+          <iframe id="js_video_iframe" src="/video-proxy/<%= media.id %>" frameborder="0"
+            class="rounded-lg shadow-md"></iframe>
+        </div>
+
+        <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
+          <%= media.topic %>
+        </h1>
+
+        <div class="mt-4">
+          <h4 class="text-1xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
+            หมวดหมู่:
+            <% if (media.tag) { %>
+              <% media.tag.split(',').forEach(function(t) { %>
+                <a href="/tag/<%= t %>"
+                  class="px-2 py-1 bg-cyan-600 rounded-xl text-white mr-2 hover:bg-cyan-500 transition">
+                  <%= t %>
+                </a>
+              <% }) %>
+            <% } %>
+          </h4>
+        </div>
+
+        <div class="mt-4">
+          <a href="/" class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500 transition font-semibold">
+            Back to list
+          </a>
+        </div>
+      </div>
+
+      <!-- ✅ sidebar -->
+      <aside class="w-full lg:w-1/4">
+        <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+          <h3 class="text-xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
+            ประเภท
+          </h3>
+          <ul class="space-y-2">
+            <% if (typeof tags !=='undefined' && tags.length> 0) { %>
+              <% tags.forEach(tagItem=> { %>
+                <li>
+                  <a href="/tag/<%= encodeURIComponent(tagItem.name) %>"
+                    class="hover:text-cyan-400">
+                    <%= tagItem.name %>
+                  </a>
+                </li>
+              <% }) %>
+            <% } else { %>
+              <li><a href="#" class="hover:text-cyan-400">ไม่มีประเภท</a></li>
+            <% } %>
+          </ul>
+        </div>
+
+        <div class="mt-8">
+          <div
+            class="flex items-center justify-center bg-gray-700 border-2 border-dashed border-gray-500 rounded-lg w-full h-64">
+            <span class="text-gray-400 text-lg font-bold">โฆษณา</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- ✅ Script -->
+  <script>
+    const adVideo = document.getElementById("adVideo");
+    const skipBtn = document.getElementById("skipBtn");
+
+    adVideo.addEventListener("play", () => {
+      setTimeout(() => (skipBtn.style.display = "inline-block"), 3000);
+    });
+
+    skipBtn.addEventListener("click", () => {
+      adVideo.pause();
+      adVideo.currentTime = 0;
+      document.getElementById("ads").style.display = "none";
+      document.getElementById("video").style.display = "block";
+    });
+
+    adVideo.addEventListener("ended", () => {
+      adVideo.currentTime = 0;
+      document.getElementById("ads").style.display = "none";
+      document.getElementById("video").style.display = "block";
+    });
+  </script>
+</body>
+</html>

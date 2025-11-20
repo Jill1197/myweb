@@ -1,0 +1,45 @@
+<div id="adsContainer" class="grid grid-cols-1 gap-1 md:grid-cols-2 w-full">
+  <p class="text-gray-400">กำลังโหลดโฆษณา...</p>
+</div>
+
+<script>
+  // ดึง ads จาก API
+  fetch('/api/v1/ads')
+    .then(res => res.json())
+    .then(ads => {
+      const container = document.getElementById('adsContainer');
+      container.innerHTML = ''; // ล้าง placeholder
+
+      // กรองเฉพาะ active = 1 และ title = 'ads'
+      const activeAds = ads.filter(ad => ad.active === 1 && ad.title === 'ads');
+
+      if (!activeAds || activeAds.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center">ไม่มีโฆษณา</p>';
+        return;
+      }
+
+      activeAds.forEach((ad, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-center rounded-lg overflow-hidden';
+
+        const a = document.createElement('a');
+        a.href = ad.click_url || '#';
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+
+        const img = document.createElement('img');
+        img.src = ad.video_url || ad.thumbnail_url || '#';
+        img.alt = `โฆษณา ${index + 1}`;
+        img.className = 'w-full max-h-[200px] object-contain';
+
+        a.appendChild(img);
+        div.appendChild(a);
+        container.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error('โหลดโฆษณาไม่สำเร็จ:', err);
+      document.getElementById('adsContainer').innerHTML =
+        '<p class="text-gray-400 text-center">โหลดโฆษณาไม่สำเร็จ</p>';
+    });
+</script>
