@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   mynetwork:
     driver: bridge
@@ -7,8 +5,8 @@ networks:
 services:
   app:
     build: .
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"   # เปิด port ให้เข้าจาก host
     volumes:
       - .:/usr/src/app:cached
       - /usr/src/app/node_modules
