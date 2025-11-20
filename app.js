@@ -11,6 +11,62 @@ const multer = require('multer');
 const tmp = require('tmp');
 const sqlite3 = require('sqlite3').verbose();
 
+// import redis
+const { createClient } = require('redis');
+const redisClient = createClient({
+  url: 'redis://localhost:6379'
+});
+
+redisClient.connect()
+  .then(() => console.log('Redis connected'))
+  .catch(err => console.error('Redis connection error:', err));
+
+// end redis
+
+
+// Cache สำหรับภาพ
+const crypto = require('crypto');
+
+const IMAGE_CACHE_DIR = path.join(__dirname, 'public', 'cache_images');
+
+// สร้างโฟลเดอร์ถ้ายังไม่มี
+if (!fs.existsSync(IMAGE_CACHE_DIR)) {
+  fs.mkdirSync(IMAGE_CACHE_DIR, { recursive: true });
+}
+
+async function cacheImage(url) {
+  const hash = crypto.createHash('md5').update(url).digest('hex');
+  const ext = path.extname(url.split('?')[0]) || '.jpg';
+  const filePath = path.join(IMAGE_CACHE_DIR, `${hash}${ext}`);
+  const localUrl = `/cache_images/${hash}${ext}`;
+
+  // 1️⃣ เช็คใน Redis ก่อน
+  const redisKey = `image_cache:${hash}`;
+  const cached = await redisClient.get(redisKey);
+
+  if (cached && fs.existsSync(filePath)) {
+    // Redis บอกว่ามีแล้ว + ไฟล์มีอยู่ → ใช้ไฟล์เดิม
+    return localUrl;
+  }
+
+  // 2️⃣ ถ้าไม่มี → ดาวน์โหลดรูป
+  try {
+    const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
+    fs.writeFileSync(filePath, response.data);
+
+    // 3️⃣ อัปเดต Redis ว่ารูปถูก cache แล้ว
+    // กำหนด TTL เช่น 7 วัน (7*24*60*60 วินาที)
+    await redisClient.setEx(redisKey, 7 * 24 * 60 * 60, 'cached');
+
+    return localUrl;
+  } catch (err) {
+    console.error('Error caching image:', err.message);
+    return url; // fallback
+  }
+}
+
+// ================= Punycode ==================
+
 require('dotenv').config();
 
 const USER = process.env.USER;
@@ -80,7 +136,7 @@ app.get('/logout', (req, res) => {
 });
 
 // List media (public)
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   const pageParam = parseInt(req.query.page, 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
   const limit = 12;
@@ -97,8 +153,15 @@ app.get('/', (req, res) => {
     db.all(
       "SELECT * FROM media ORDER BY id DESC LIMIT ? OFFSET ?",
       [limit, offset],
-      (err2, mediaList) => {
+      async (err2, mediaList) => {
         if (err2) return res.status(500).send(err2.message);
+
+        // ⭐⭐ ทำ cache รูปภาพตรงนี้ ⭐⭐
+        for (let item of mediaList) {
+          if (item.image_embed) {
+            item.image_embed = await cacheImage(item.image_embed);
+          }
+        }
 
         db.all("SELECT * FROM tags", [], (err3, tags) => {
           if (err3) return res.status(500).send(err3.message);
@@ -117,6 +180,7 @@ app.get('/', (req, res) => {
 });
 
 
+
 // Manage page (Admin only)
 app.get('/manage', isAdmin, (req, res) => {
   db.all("SELECT * FROM media", [], (err, rows) => {
@@ -125,24 +189,25 @@ app.get('/manage', isAdmin, (req, res) => {
   });
 });
 
-app.get('/new-videos', (req, res) => {
-  db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], (err, rows) => {
+app.get('/new-videos', async (req, res) => {
+  db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
     if (err) return res.status(500).send('Database error');
 
-    const videos = rows.map(video => {
+    const videos = [];
+
+    for (const video of rows) {
       const v = { ...video };
-      try {
-        const url = new URL(v.image_embed);
-        url.hostname = punycode.toUnicode(url.hostname);
-        v.image_embed = url.toString();
-      } catch { }
-      return v;
-    });
+
+      // ไม่แปลง URL อะไรทั้งนั้น
+      // ดาวน์โหลดรูปภาพมาทำ Cache
+      v.image_embed = await cacheImage(v.image_embed);
+
+      videos.push(v);
+    }
 
     res.render('new-videos', { videos });
   });
 });
-
 
 app.get('/load-page', (req, res) => {
   return res.render('load_page');
