@@ -69,6 +69,9 @@
       <!-- Video Content -->
       <div class="w-full lg:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
         <!-- Player -->
+        <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 mt-4">
+          <%= media.topic %>
+        </h1>
         <div id="player-api" class="video-container relative">
           <div class="overlay-play">
             <button>เล่นวิดีโอ</button>
@@ -88,9 +91,10 @@
         </div>
 
         <!-- Video Title & Categories -->
-        <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 mt-4">
-          <%= media.topic %>
-        </h1>
+        <div  class="flex justify-center">
+          <button class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold"><a href="/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>">แจ้งคลิปเสีย</a>
+          </button>
+        </div>
         จำนวนผู้ชม: <span class="text-yellow-400 font-semibold">
           <%= media.views || 0 %>
         </span> คน
@@ -278,3 +282,4 @@
   </script>
 </body>
 </html>
+
