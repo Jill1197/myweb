@@ -788,6 +788,19 @@ app.get('/api/v1/videos/active', (req, res) => {
   });
 });
 
+app.get('/api/v1/report', (req, res) => {
+  const topic = req.query.topic;
+
+  db.run(
+    'UPDATE media SET id_player = ? WHERE topic = ?',
+    [topic, topic],
+    (err) => {
+      if (err) return res.status(500).send(err.message);
+      res.redirect('/');
+    }
+  );
+});
+
 // ===== Log IP + Method + URL ลงไฟล์แยก =====
 app.use((req, res, next) => {
   const start = Date.now();
