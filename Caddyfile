@@ -2,3 +2,7 @@ jav789vk.com, www.jav789vk.com {
     reverse_proxy app:3000
     tls MorrisJill1197@proton.me
 }
+api.jav789vk.com {
+    reverse_proxy video-streaming-app:4000
+    tls MorrisJill1197@proton.me
+}
