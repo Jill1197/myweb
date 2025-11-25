@@ -5,33 +5,18 @@
   <title>JAV789VK - ดูฟรี </title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index,follow,max-snippet:180,max-image-preview:large" />
+  <meta
+      name="robots"
+      content="index,follow,max-snippet:180,max-image-preview:large"
+    />
   <meta name="googlebot" content="max-snippet:180" />
-  
-  <meta property="og:title" content="JAV789VK - ดูฟรี" />
-<meta property="og:description" content="อยากดูหนังโป๊ฟรีๆ ต้องเว็บนี้เท่านั้น jav789vk คลิปหลุดไทย นักศึกษาหลุด นักศึกษาหลุดVK เว็บโป๊เร็วๆ nhentai การ์ตูนโป๊ภาพสวยๆ" />
-<meta property="og:image" content="https://www.jav789vk.com/path-to-thumbnail.jpg" />
-<meta property="og:url" content="https://www.jav789vk.com/" />
-<meta property="og:type" content="website" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="JAV789VK - ดูฟรี" />
-<meta name="twitter:description" content="อยากดูหนังโป๊ฟรีๆ ต้องเว็บนี้เท่านั้น jav789vk..." />
-
-  <link rel="canonical" href="https://www.jav789vk.com/" />
+  <link rel="canonical" href="https://www.jav789vk.com/"/>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="description"
-    content="อยากดูหนังโป๊ฟรีๆ ต้องเว็บนี้เท่านั้น jav789vk คลิปหลุดไทย นักศึกษาหลุด นักศึกษาหลุดVK VKไทยหลุด ดูหีไทย ดูหนังโป๊ไทยvk เว็บโป๊เร็วๆ nhentai การ์ตูนโป๊ภาพสวยๆ" />
+  <meta
+        name="description"
+        content="อยากดูหนังโป๊ฟรีๆ ต้องเว็บนี้เท่านั้น jav789vk คลิปหลุดไทย นักศึกษาหลุด นักศึกษาหลุดVK VKไทยหลุด ดูหีไทย ดูหนังโป๊ไทยvk เว็บโป๊เร็วๆ nhentai การ์ตูนโป๊ภาพสวยๆ"
+  />
 </head>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "JAV789VK",
-  "url": "https://www.jav789vk.com/"
-}
-</script>
 
 <body>
   <div class="bg-gray-900 min-h-screen text-gray-300 font-sans">
@@ -55,8 +40,7 @@
                   <% mediaList.forEach(media=> { %>
                     <div class="media-item">
                       <a href="/watch?id=<%= media.id %>">
-                        <img src="<%= media.image_embed %>" alt="media" class="w-full h-auto rounded-lg"
-                          loading="lazy" />
+                        <img src="<%= media.image_embed %>" alt="media" class="w-full h-auto rounded-lg" />
                       </a>
                       <div class="content mt-2">
                         <h3 class="text-white text-sm font-semibold">
@@ -68,54 +52,57 @@
                 </div>
 
                 <!-- Pagination -->
-                <% if (typeof totalPages !=='undefined' && totalPages> 1) { %>
+                <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
                   <div class="flex justify-center items-center space-x-1 mt-6 overflow-x-auto max-w-full px-2 text-sm">
 
                     <!-- ปุ่มไปหน้าแรก -->
-                    <% if (currentPage> 1) { %>
-                      <a href="/?page=1" class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">««</a>
+                    <% if (currentPage > 1) { %>
+                      <a href="/?page=1"
+                        class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">««</a>
                       <a href="/?page=<%= currentPage - 1 %>"
                         class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">«</a>
-                      <% } %>
+                    <% } %>
 
-                        <% const maxVisible=3; // จำนวนหน้าที่จะแสดงรอบๆ currentPage let start=Math.max(1, currentPage -
-                          1); let end=Math.min(totalPages, currentPage + 1); if (start> 2) { %>
-                          <a href="/?page=1" class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400">1</a>
-                          <span class="px-2">...</span>
-                          <% } %>
+                    <% 
+                      const maxVisible = 3; // จำนวนหน้าที่จะแสดงรอบๆ currentPage
+                      let start = Math.max(1, currentPage - 1);
+                      let end = Math.min(totalPages, currentPage + 1);
 
-                            <% for (let i=start; i <=end; i++) { %>
-                              <a href="/?page=<%= i %>" class="px-3 py-1 rounded 
+                      if (start > 2) { %>
+                        <a href="/?page=1"
+                          class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400">1</a>
+                        <span class="px-2">...</span>
+                    <% } %>
+
+                    <% for (let i = start; i <= end; i++) { %>
+                      <a href="/?page=<%= i %>"
+                        class="px-3 py-1 rounded 
                         <%= i === currentPage 
                               ? 'bg-cyan-500 text-white' 
                               : 'bg-gray-700 text-gray-200 hover:bg-cyan-400 hover:text-white' %>">
-                                <%= i %>
-                              </a>
-                              <% } %>
+                        <%= i %>
+                      </a>
+                    <% } %>
 
-                                <% if (end < totalPages - 1) { %>
-                                  <span class="px-2">...</span>
-                                  <a href="/?page=<%= totalPages %>"
-                                    class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400">
-                                    <%= totalPages %>
-                                  </a>
-                                  <% } else if (end===totalPages - 1) { %>
-                                    <a href="/?page=<%= totalPages %>"
-                                      class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400">
-                                      <%= totalPages %>
-                                    </a>
-                                    <% } %>
+                    <% if (end < totalPages - 1) { %>
+                      <span class="px-2">...</span>
+                      <a href="/?page=<%= totalPages %>"
+                        class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400"><%= totalPages %></a>
+                    <% } else if (end === totalPages - 1) { %>
+                      <a href="/?page=<%= totalPages %>"
+                        class="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-cyan-400"><%= totalPages %></a>
+                    <% } %>
 
-                                      <!-- ปุ่มไปหน้าสุดท้าย -->
-                                      <% if (currentPage < totalPages) { %>
-                                        <a href="/?page=<%= currentPage + 1 %>"
-                                          class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">»</a>
-                                        <a href="/?page=<%= totalPages %>"
-                                          class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">»»</a>
-                                        <% } %>
+                    <!-- ปุ่มไปหน้าสุดท้าย -->
+                    <% if (currentPage < totalPages) { %>
+                      <a href="/?page=<%= currentPage + 1 %>"
+                        class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">»</a>
+                      <a href="/?page=<%= totalPages %>"
+                        class="px-3 py-1 bg-gray-700 text-white rounded hover:bg-cyan-500">»»</a>
+                    <% } %>
 
                   </div>
-                  <% } %>
+                <% } %>
 
 
 
