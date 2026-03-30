@@ -26,19 +26,19 @@ services:
     networks:
       - mynetwork
 
-  caddy:
-    image: caddy:2
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - mynetwork
+#   caddy:
+#     image: caddy:2
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./Caddyfile:/etc/caddy/Caddyfile
+#       - caddy_data:/data
+#       - caddy_config:/config
+#     networks:
+#       - mynetwork
 
-volumes:
-  caddy_data:
-  caddy_config:
+# volumes:
+#   caddy_data:
+#   caddy_config:
 
