@@ -179,8 +179,6 @@ app.get('/', async (req, res) => {
   });
 });
 
-
-
 // Manage page (Admin only)
 app.get('/manage', isAdmin, (req, res) => {
   db.all("SELECT * FROM media", [], (err, rows) => {
@@ -189,25 +187,52 @@ app.get('/manage', isAdmin, (req, res) => {
   });
 });
 
-app.get('/new-videos', async (req, res) => {
-  db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
-    if (err) return res.status(500).send('Database error');
+// app.get('/new-videos', async (req, res) => {
+//   db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
+//     if (err) return res.status(500).send('Database error');
 
-    const videos = [];
+//     const videos = [];
 
-    for (const video of rows) {
-      const v = { ...video };
+//     for (const video of rows) {
+//       const v = { ...video };
 
-      // ไม่แปลง URL อะไรทั้งนั้น
-      // ดาวน์โหลดรูปภาพมาทำ Cache
-      v.image_embed = await cacheImage(v.image_embed);
+//       // ไม่แปลง URL อะไรทั้งนั้น
+//       // ดาวน์โหลดรูปภาพมาทำ Cache
+//       v.image_embed = await cacheImage(v.image_embed);
 
-      videos.push(v);
-    }
+//       videos.push(v);
+//     }
 
-    res.render('new-videos', { videos });
-  });
+//     res.render('new-videos', { videos });
+//   });
+// });
+
+//=================================================================
+app.get('/new-videos', (req, res) => {
+    // ดึงข้อมูล 20 ตัวล่าสุด แล้วส่งออกไปทันที
+    db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], (err, rows) => {
+        if (err) return res.status(500).send('Database error');
+        
+        // Render ครั้งเดียว จบงานฝั่ง Server
+        res.render('new-videos', { videos: rows });
+    });
 });
+
+app.get('/api/cache-image', async (req, res) => {
+    const imageUrl = req.query.url;
+    if (!imageUrl) return res.status(400).send();
+
+    try {
+        // ให้ฟังก์ชัน cacheImage ของคุณทำงานเงียบๆ 
+        // ถ้ามีรูปแล้วก็ไม่ต้องทำอะไร ถ้าไม่มีก็ดาวน์โหลดมาเก็บ
+        await cacheImage(imageUrl); 
+        res.status(200).json({ status: 'ok' });
+    } catch (err) {
+        res.status(500).send();
+    }
+});
+
+//===========================================================================
 
 app.get('/load-page', (req, res) => {
   return res.render('load_page');
@@ -577,6 +602,19 @@ app.post('/api/v1/media/:id/view', (req, res) => {
 
 app.get('/api/v1/top-views', (req, res) => {
   db.all("SELECT * FROM media ORDER BY views DESC", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'No videos found' });
+    res.json(rows);
+  });
+});
+
+app.get('/api/v1/top-views/:limit', (req, res) => {
+  const limit = parseInt(req.params.limit, 10);
+  if (!Number.isFinite(limit) || limit <= 0) {
+    return res.status(400).json({ error: 'Invalid limit parameter' });
+  }
+  
+  db.all("SELECT * FROM media ORDER BY views DESC LIMIT ?", [limit], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     if (!rows || rows.length === 0) return res.status(404).json({ error: 'No videos found' });
     res.json(rows);
