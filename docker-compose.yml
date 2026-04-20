@@ -6,14 +6,13 @@ services:
   redis:
     image: redis:7
     container_name: myweb-redis
-    ports:
-      - "6379:6379"
     networks:
       - mynetwork
+
   app:
     build: .
     ports:
-      - "3000:3000"   # เปิด port ให้เข้าจาก host
+      - "3000:3000"
     volumes:
       - .:/usr/src/app:cached
       - /usr/src/app/node_modules
@@ -26,19 +25,18 @@ services:
     networks:
       - mynetwork
 
-#   caddy:
-#     image: caddy:2
-#     ports:
-#       - "80:80"
-#       - "443:443"
-#     volumes:
-#       - ./Caddyfile:/etc/caddy/Caddyfile
-#       - caddy_data:/data
-#       - caddy_config:/config
-#     networks:
-#       - mynetwork
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mynetwork
 
-# volumes:
-#   caddy_data:
-#   caddy_config:
-
+volumes:
+  caddy_data:
+  caddy_config:
