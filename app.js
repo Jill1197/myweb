@@ -179,6 +179,15 @@ app.get('/', async (req, res) => {
   });
 });
 
+// API Real Video Link Player
+app.get('/api/v1/media_main/:id', (req, res) => {
+  db.get("SELECT * FROM media WHERE id = ?", [req.params.id], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (!row) return res.status(404).json({ error: 'Media not found' });
+    res.json(row);
+  });
+});
+
 // Manage page (Admin only)
 app.get('/manage', isAdmin, (req, res) => {
   db.all("SELECT * FROM media", [], (err, rows) => {

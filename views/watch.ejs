@@ -108,6 +108,43 @@
           <iframe id="apiVideo" src="" allowfullscreen class="mainVideo rounded-lg shadow-md" style="display:none;"></iframe>
         </div>
 
+        <div class="flex justify-center">
+          <a id="real-video-link" href="#" target="_blank" class="hidden px-4 py-2 bg-[#01579b] text-white rounded hover:bg-green-500 transition font-semibold">
+            เครื่องเล่น 2 (ลิงก์ตรง) เต็มจอ
+          </a>
+          <span id="loading-text" class="text-gray-400 text-sm italic">กำลังดึงลิงก์วิดีโอ...</span>
+        </div>
+        <br>
+
+        <script>
+          async function getRealVideoLink() {
+            const videoId = "<%= media.id %>"; // ดึง ID จาก EJS
+            const linkBtn = document.getElementById('real-video-link');
+            const loadingText = document.getElementById('loading-text');
+
+            try {
+              // เรียก API ตามเส้นทางที่คุณให้มา
+              const response = await fetch(`/api/v1/media_main/${videoId}`);
+              const data = await response.json();
+
+              if (data && data.video_embed) {
+                // นำ video_embed มาใส่ใน href
+                linkBtn.href = data.video_embed;
+                
+                // แสดงปุ่ม และซ่อน Loading
+                linkBtn.classList.remove('hidden');
+                if (loadingText) loadingText.style.display = 'none';
+              }
+            } catch (error) {
+              console.error('Error fetching video link:', error);
+              if (loadingText) loadingText.innerText = 'ไม่สามารถโหลดลิงก์ได้';
+            }
+          }
+
+          // รันฟังก์ชันเมื่อโหลดหน้าเสร็จ
+          document.addEventListener('DOMContentLoaded', getRealVideoLink);
+        </script>
+
         <!-- Video Title & Categories -->
         <div class="flex justify-center">
           <button class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold"><a href="/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>">แจ้งคลิปเสีย</a>
