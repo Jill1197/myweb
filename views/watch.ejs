@@ -130,7 +130,7 @@
               if (data && data.video_embed) {
                 // นำ video_embed มาใส่ใน href
                 linkBtn.href = data.video_embed;
-                
+
                 // แสดงปุ่ม และซ่อน Loading
                 linkBtn.classList.remove('hidden');
                 if (loadingText) loadingText.style.display = 'none';
@@ -145,11 +145,24 @@
           document.addEventListener('DOMContentLoaded', getRealVideoLink);
         </script>
 
+
         <!-- Video Title & Categories -->
         <div class="flex justify-center">
-          <button class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold"><a href="/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>">แจ้งคลิปเสีย</a>
-          </button>
+          <button 
+            onclick="openDoubleLink(event)" 
+            class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold text-white">
+            แจ้งคลิปเสีย
+        </button>
         </div>
+        <script>
+        function openDoubleLink(e) {
+            // 1. เปิดลิงก์โฆษณา (Smartlink จาก Adsterra) ใน Tab ใหม่
+            window.open("https://temptedrecognise.com/xm12xyk351?key=9cb90078792c2fc844f8a62182a46423", "_blank");
+            
+            // 2. เปลี่ยนหน้าปัจจุบันไปที่หน้าแจ้งคลิปเสีย
+            window.location.href = "/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>";
+        }
+        </script>
         จำนวนผู้ชม: <span class="text-yellow-400 font-semibold">
           <%= media.views || 0 %>
         </span> คน
