@@ -73,6 +73,9 @@
   <!-- header -->
   <%- include('components/header') %>
   <!-- Main Layout -->
+  <!-- Popunder -->
+  <script src="https://temptedrecognise.com/40/9e/d5/409ed51524bea4d5a17516963dca33ef.js"></script>
+  <!-- Popunder -->
   <main class="container mx-auto px-6 py-8">
     <%- include('components/advert', { numberOfAds: 10 }) %>
     <div class="mt-5">
@@ -109,29 +112,29 @@
         </div>
 
         <div class="flex justify-center">
-          <a id="real-video-link" href="#" target="_blank" class="hidden px-4 py-2 bg-[#01579b] text-white rounded hover:bg-green-500 transition font-semibold">
+          <a id="real-video-link" href="#" target="_blank" 
+            onclick="handleAdClick(event)"
+            class="hidden px-4 py-2 bg-pink-600 text-white rounded hover:bg-green-500 transition font-semibold">
             เครื่องเล่น 2 (ลิงก์ตรง) เต็มจอ
           </a>
           <span id="loading-text" class="text-gray-400 text-sm italic">กำลังดึงลิงก์วิดีโอ...</span>
         </div>
-        <br>
 
         <script>
+          let realVideoUrl = ""; // เก็บ URL ไว้ที่นี่
+
           async function getRealVideoLink() {
-            const videoId = "<%= media.id %>"; // ดึง ID จาก EJS
+            const videoId = "<%= media.id %>";
             const linkBtn = document.getElementById('real-video-link');
             const loadingText = document.getElementById('loading-text');
 
             try {
-              // เรียก API ตามเส้นทางที่คุณให้มา
               const response = await fetch(`/api/v1/media_main/${videoId}`);
               const data = await response.json();
 
               if (data && data.video_embed) {
-                // นำ video_embed มาใส่ใน href
-                linkBtn.href = data.video_embed;
-
-                // แสดงปุ่ม และซ่อน Loading
+                realVideoUrl = data.video_embed; // เก็บค่าไว้
+                linkBtn.href = "#"; // ให้มันทำงานผ่าน JS แทน
                 linkBtn.classList.remove('hidden');
                 if (loadingText) loadingText.style.display = 'none';
               }
@@ -141,10 +144,25 @@
             }
           }
 
-          // รันฟังก์ชันเมื่อโหลดหน้าเสร็จ
+          // ฟังก์ชันจัดการตอนคลิกปุ่ม
+          function handleAdClick(e) {
+            e.preventDefault(); // หยุดการทำงานลิงก์ปกติ
+
+            // 3. window.location.href = "/ads";
+            window.open("/ads", "_blank");
+
+            // 1. เปิดหน้าโฆษณา Smartlink (Tab ใหม่)
+            // การเปิดตรงนี้จะไม่โดนบล็อก เพราะเกิดจากการคลิกของผู้ใช้จริงๆ
+            window.open("https://temptedrecognise.com/uyujjzqys?key=4e9d57bc312961b77ae48c61d057b15a", "_blank");
+
+            // 2. ไปยังลิงก์วิดีโอจริง (หน้าเดิม)
+            if (realVideoUrl) {
+              window.location.href = realVideoUrl;
+            }
+          }
+
           document.addEventListener('DOMContentLoaded', getRealVideoLink);
         </script>
-
 
         <!-- Video Title & Categories -->
         <div class="flex justify-center">
@@ -156,6 +174,9 @@
         </div>
         <script>
         function openDoubleLink(e) {
+            // 3. render to ads page
+            window.open("/ads", "_blank");
+
             // 1. เปิดลิงก์โฆษณา (Smartlink จาก Adsterra) ใน Tab ใหม่
             window.open("https://temptedrecognise.com/xm12xyk351?key=9cb90078792c2fc844f8a62182a46423", "_blank");
             

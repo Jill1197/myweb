@@ -196,6 +196,11 @@ app.get('/manage', isAdmin, (req, res) => {
   });
 });
 
+// page ads
+app.get('/ads', (req, res) =>{
+  res.render('ads');
+})
+
 // app.get('/new-videos', async (req, res) => {
 //   db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
 //     if (err) return res.status(500).send('Database error');
