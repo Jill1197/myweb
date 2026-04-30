@@ -277,11 +277,12 @@ app.get('/edit/:id', isAdmin, (req, res) => {
     res.render('edit', { media: row });
   });
 });
+
 app.post('/edit/:id', isAdmin, (req, res) => {
-  const { topic, image_embed, video_embed } = req.body;
+  const { topic, image_embed, video_embed, views } = req.body;
   db.run(
-    "UPDATE media SET topic=?, image_embed=?, video_embed=? WHERE id=?",
-    [topic, image_embed, video_embed, req.params.id],
+    "UPDATE media SET topic=?, image_embed=?, video_embed=?, views=? WHERE id=?",
+    [topic, image_embed, video_embed, views, req.params.id],
     (err) => {
       if (err) return res.send(err.message);
       res.redirect('/manage');
