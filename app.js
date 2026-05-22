@@ -201,52 +201,25 @@ app.get('/ads', (req, res) =>{
   res.render('ads');
 })
 
-// app.get('/new-videos', async (req, res) => {
-//   db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
-//     if (err) return res.status(500).send('Database error');
+app.get('/new-videos', async (req, res) => {
+  db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], async (err, rows) => {
+    if (err) return res.status(500).send('Database error');
 
-//     const videos = [];
+    const videos = [];
 
-//     for (const video of rows) {
-//       const v = { ...video };
+    for (const video of rows) {
+      const v = { ...video };
 
-//       // ไม่แปลง URL อะไรทั้งนั้น
-//       // ดาวน์โหลดรูปภาพมาทำ Cache
-//       v.image_embed = await cacheImage(v.image_embed);
+      // ไม่แปลง URL อะไรทั้งนั้น
+      // ดาวน์โหลดรูปภาพมาทำ Cache
+      v.image_embed = await cacheImage(v.image_embed);
 
-//       videos.push(v);
-//     }
-
-//     res.render('new-videos', { videos });
-//   });
-// });
-
-//=================================================================
-app.get('/new-videos', (req, res) => {
-    // ดึงข้อมูล 20 ตัวล่าสุด แล้วส่งออกไปทันที
-    db.all("SELECT * FROM media ORDER BY id DESC LIMIT 20", [], (err, rows) => {
-        if (err) return res.status(500).send('Database error');
-        
-        // Render ครั้งเดียว จบงานฝั่ง Server
-        res.render('new-videos', { videos: rows });
-    });
-});
-
-app.get('/api/cache-image', async (req, res) => {
-    const imageUrl = req.query.url;
-    if (!imageUrl) return res.status(400).send();
-
-    try {
-        // ให้ฟังก์ชัน cacheImage ของคุณทำงานเงียบๆ 
-        // ถ้ามีรูปแล้วก็ไม่ต้องทำอะไร ถ้าไม่มีก็ดาวน์โหลดมาเก็บ
-        await cacheImage(imageUrl); 
-        res.status(200).json({ status: 'ok' });
-    } catch (err) {
-        res.status(500).send();
+      videos.push(v);
     }
-});
 
-//===========================================================================
+    res.render('new-videos', { videos });
+  });
+});
 
 app.get('/load-page', (req, res) => {
   return res.render('load_page');
@@ -298,26 +271,67 @@ app.get('/delete/:id', isAdmin, (req, res) => {
   });
 });
 
-// Watch video
+// ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
 app.get('/watch', (req, res) => {
   const id = req.query.id;
 
+  if (!id) {
+    return res.status(400).send("Missing video ID");
+  }
+
+  // ดึงข้อมูลเพื่อเอาชื่อเรื่อง (topic) มาทำ URL สวยๆ
+  db.get("SELECT topic FROM media WHERE id = ?", [id], (err, row) => {
+    if (err || !row) {
+      // ถ้ามีข้อผิดพลาด หรือไม่เจอข้อมูล ให้ส่งไปแบบไม่มีชื่อเรื่องเพื่อเซฟระบบ
+      return res.redirect(`/watch/${id}`);
+    }
+
+    // แปลงชื่อเรื่องให้เป็นมิตรกับ URL (เปลี่ยนช่องว่างเป็น -, ลบสแลชออกเพื่อป้องกัน Route พัง)
+    const safeTopic = encodeURIComponent(row.topic.replace(/ /g, '-').replace(/\//g, ''));
+
+    // ⭐️ พระเอกของงาน: สั่งย้าย URL ไปเป็นแบบที่ Google ชอบทันที
+    res.redirect(`/watch/${id}/${safeTopic}`);
+  });
+});
+
+// รองรับ URL แบบใหม่ที่คุณต้องการ: /watch/375/ชื่อวิดีโอ
+app.get('/watch/:id/:topic?', (req, res) => {
+  const id = req.params.id;
+
+  // 1. ดึงข้อมูลวิดีโอหลักที่กำลังดู
   db.get("SELECT * FROM media WHERE id = ?", [id], (err, row) => {
     if (err) return res.status(500).send(err.message);
     if (!row) return res.status(404).send("Video not found");
 
-    // ดึง random videos 10 ตัว ยกเว้นวิดีโอที่กำลังดู
+    // 2. ดึงวิดีโอแนะนำสุ่ม 10 ตัว (ยกเว้นตัวที่กำลังดู)
     db.all("SELECT * FROM media WHERE id != ? ORDER BY RANDOM() LIMIT 10", [id], (err2, randoms) => {
       if (err2) return res.status(500).send(err2.message);
 
-      res.render('watch', {
-        media: row,
-        randomVideos: randoms || [] // ส่ง randomVideos ไปที่ watch.ejs
+      // 3. ดึงคีย์เวิร์ดแท็กจากฐานข้อมูลเพื่อเอาไปทำ SEO เมนูด้านขวา (SSR)
+      db.all("SELECT DISTINCT tag FROM media WHERE tag IS NOT NULL AND tag != '' LIMIT 15", [], (err3, tagRows) => {
+
+        let allTags = [];
+        if (!err3 && tagRows) {
+          let tempTags = new Set();
+          tagRows.forEach(r => {
+            if (r.tag) {
+              r.tag.split(',').forEach(t => tempTags.add(t.trim()));
+            }
+          });
+          allTags = Array.from(tempTags).slice(0, 15);
+        }
+
+        // ส่งข้อมูลกลับไปเรนเดอร์ที่หน้าเว็บ watch.ejs เหมือนเดิมเป๊ะ
+        res.render('watch', {
+          media: row,
+          randomVideos: randoms || [],
+          allTags: allTags
+        });
       });
+
     });
   });
 });
-
 
 // Proxy route ซ่อน URL วิดีโอ
 app.get('/video-proxy/:id', async (req, res) => {
@@ -628,7 +642,7 @@ app.get('/api/v1/top-views/:limit', (req, res) => {
   if (!Number.isFinite(limit) || limit <= 0) {
     return res.status(400).json({ error: 'Invalid limit parameter' });
   }
-  
+
   db.all("SELECT * FROM media ORDER BY views DESC LIMIT ?", [limit], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     if (!rows || rows.length === 0) return res.status(404).json({ error: 'No videos found' });
