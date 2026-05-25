@@ -1,0 +1,42 @@
+networks:
+  mynetwork:
+    driver: bridge
+
+services:
+  redis:
+    image: redis:7
+    container_name: myweb-redis
+    networks:
+      - mynetwork
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app:cached
+      - /usr/src/app/node_modules
+      - ./database.sqlite:/usr/src/app/database.sqlite
+      - ./public:/usr/src/app/public
+      - ./access.log:/usr/src/app/access.log
+      - ./essential-access.log:/usr/src/app/essential-access.log
+    environment:
+      NODE_ENV: development
+    networks:
+      - mynetwork
+
+#   caddy:
+#     image: caddy:2
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./Caddyfile:/etc/caddy/Caddyfile
+#       - caddy_data:/data
+#       - caddy_config:/config
+#     networks:
+#       - mynetwork
+
+# volumes:
+#   caddy_data:
+#   caddy_config:
