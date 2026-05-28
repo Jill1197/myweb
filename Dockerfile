@@ -9,9 +9,12 @@ COPY package*.json ./
 # ติดตั้ง dependencies
 RUN npm install
 
+# Copy code ที่เหลือ
+COPY . .
+
 # สร้างไฟล์ log ถ้ายังไม่มี
-# RUN touch access.log && touch essential-access.log \
-Run mkdir -p public/videos public/image \ 
+RUN touch access.log essential-access.log \
+    && mkdir -p public/videos public/image \
     && mkdir -p views/components
 
 # เปิด port

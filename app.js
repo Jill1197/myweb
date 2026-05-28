@@ -628,14 +628,32 @@ app.get('/tags/delete/:id', isAdmin, (req, res) => {
 // Filter media ตาม tag
 app.get('/tag/:tag', (req, res) => {
   const tag = decodeURIComponent(req.params.tag);
-  db.all("SELECT * FROM media WHERE tag LIKE ?", [`%${tag}%`], (err, mediaList) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 20;
+
+  db.all("SELECT * FROM media WHERE tag LIKE ?", [`%${tag}%`], (err, allMedia) => {
     if (err) return res.send(err.message);
 
-    // ดึง tags ทั้งหมด สำหรับ sidebar
+    // --- เพิ่มตรงนี้: เรียงลำดับจาก ID มากไปน้อย (ล่าสุดไปเก่า) ---
+    allMedia.sort((a, b) => b.id - a.id);
+    // --------------------------------------------------------
+
+    // ทำ Pagination
+    const totalPages = Math.ceil(allMedia.length / limit);
+    const startIndex = (page - 1) * limit;
+    const paginatedMedia = allMedia.slice(startIndex, startIndex + limit);
+
     db.all("SELECT * FROM tags", [], (err, allTags) => {
       if (err) return res.send(err.message);
 
-      res.render('tag', { mediaList, allTags, tag, user: req.session.user });
+      res.render('tag', { 
+        mediaList: paginatedMedia, 
+        allTags, 
+        tag, 
+        currentPage: page, 
+        totalPages: totalPages, 
+        user: req.session.user 
+      });
     });
   });
 });
@@ -718,9 +736,11 @@ app.get('/most-popular', (req, res) => {
 
 app.get('/search', (req, res) => {
   const keyword = req.query.q;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 20;
 
   if (!keyword || keyword.trim() === '') {
-    return res.redirect('/'); // ถ้าไม่ได้พิมพ์อะไร ให้กลับหน้าแรก
+    return res.redirect('/');
   }
 
   const sql = "SELECT * FROM media WHERE topic LIKE ? ORDER BY id DESC";
@@ -729,17 +749,26 @@ app.get('/search', (req, res) => {
   db.all(sql, params, (err, rows) => {
     if (err) return res.status(500).send('Database error');
 
-    const videos = rows.map(video => {
+    // ทำ Pagination
+    const totalPages = Math.ceil(rows.length / limit);
+    const startIndex = (page - 1) * limit;
+    const paginatedVideos = rows.slice(startIndex, startIndex + limit).map(video => {
       const v = { ...video };
       try {
         const url = new URL(v.image_embed);
+        // หมายเหตุ: ต้องมั่นใจว่ามีการ require('punycode') ไว้ด้านบนของไฟล์
         url.hostname = punycode.toUnicode(url.hostname);
         v.image_embed = url.toString();
       } catch { }
       return v;
     });
 
-    res.render('search-results', { videos, keyword });
+    res.render('search-results', { 
+      videos: paginatedVideos, 
+      keyword,
+      currentPage: page,
+      totalPages: totalPages
+    });
   });
 });
 
