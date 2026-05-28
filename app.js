@@ -225,6 +225,51 @@ app.get('/load-page', (req, res) => {
   return res.render('load_page');
 });
 
+// Short Link
+
+app.get('/short-link', (req, res) => {
+  return res.render('short_link');
+});
+
+app.post('/shorten', (req, res) => {
+    const { url } = req.body;
+    const idHash = Math.random().toString(36).substring(2, 8);
+    
+    // ดึง Domain จาก Request Header โดยอัตโนมัติ
+    const domain = req.get('host'); 
+    const protocol = req.protocol; // เช่น http หรือ https
+    const fullLink = `${protocol}://${domain}/links/${idHash}`;
+
+    db.run("INSERT INTO links (id, url) VALUES (?, ?)", [idHash, url], (err) => {
+        if (err) return res.status(500).send("บันทึกข้อมูลไม่ได้");
+        
+        // ส่งค่ากลับเป็น Dynamic Link
+        res.send(`ลิงก์สำเร็จ: <a href="/links/${idHash}" target="_blank">${fullLink}</a>`);
+    });
+});
+
+app.get('/links/:id', (req, res) => {
+    const id = req.params.id;
+
+    db.get("SELECT url FROM links WHERE id = ?", [id], (err, row) => {
+        if (err || !row) return res.status(404).send("ไม่พบลิงก์นี้ในระบบ");
+
+        // ส่งหน้า HTML ดักบอท (ไม่ให้ดึงรูป)
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta property="og:image" content="">
+                <meta property="og:title" content=" ">
+                <meta name="robots" content="noindex, nofollow">
+                <script>window.location.href = "${row.url}";</script>
+            </head>
+            <body></body>
+            </html>
+        `);
+    });
+});
+
 // Add media
 app.get('/add', isAdmin, (req, res) => res.render('add'));
 app.post('/add', isAdmin, (req, res) => {

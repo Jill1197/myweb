@@ -30,6 +30,12 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE
   )`);
+  
+  db.run(`CREATE TABLE IF NOT EXISTS links (
+    id TEXT PRIMARY KEY,
+    url TEXT
+  )`);
+
 });
 
 module.exports = db;
