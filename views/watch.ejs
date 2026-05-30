@@ -26,12 +26,54 @@
     gtag('config', 'G-VLMJVZ7NQF');
   </script>
   <style>
-    .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin-bottom: 20px; }
-    .video-container iframe, .video-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .overlay-play { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; }
-    .overlay-play button { background: #06b6d4; color: #fff; font-size: 26px; font-weight: bold; padding: 20px 40px; border: none; border-radius: 14px; cursor: pointer; transition: 0.2s; }
-    .overlay-play button:hover { background: #0891b2; }
-  </style>
+  .video-container { 
+    position: relative; 
+    /* เดิม 56.25% ปรับเป็น 70.3% เพื่อขยายขนาดขึ้น 25% */
+    padding-bottom: 70.3%; 
+    height: 0; 
+    overflow: hidden; 
+    max-width: 100%; 
+    margin-bottom: 20px; 
+  }
+  
+  .video-container iframe, .video-container video { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+  }
+  
+  .overlay-play { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.85); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    z-index: 20; 
+  }
+  
+  .overlay-play button { 
+    background: #06b6d4; 
+    color: #fff; 
+    font-size: 26px; 
+    font-weight: bold; 
+    padding: 20px 40px; 
+    border: none; 
+    border-radius: 14px; 
+    cursor: pointer; 
+    transition: 0.2s; 
+  }
+  
+  .overlay-play button:hover { 
+    background: #0891b2; 
+  }
+</style>
 </head>
 
 <body class="bg-gray-900 text-gray-300 font-sans">
