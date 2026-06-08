@@ -6,14 +6,15 @@ services:
   redis:
     image: redis:7
     container_name: myweb-redis
+    restart: unless-stopped  
     networks:
       - mynetwork
 
   app:
     build: .
+    restart: unless-stopped  
     ports:
       - "127.0.0.1:3000:3000"
-
     volumes:
       - .:/usr/src/app:cached
       - /usr/src/app/node_modules
@@ -28,6 +29,7 @@ services:
 
   caddy:
     image: caddy:2
+    restart: unless-stopped  
     ports:
       - "80:80"
       - "443:443"
