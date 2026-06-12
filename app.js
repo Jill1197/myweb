@@ -975,4 +975,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+    res.status(404).send('404 Not Found');
+});
+
+// 2. ดักจับ Error ตัวสุดท้าย ถ้าโค้ดส่วนอื่นแครช ให้เปลี่ยนจาก 500 หน้าขาว เป็น 404 เพื่อเซฟอันดับ SEO
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(404).send('404 Not Found');
+});
+
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
