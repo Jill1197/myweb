@@ -317,24 +317,27 @@ app.get('/delete/:id', isAdmin, (req, res) => {
 });
 
 // ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
+// ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
+// ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
 app.get('/watch', (req, res) => {
   const id = req.query.id;
 
-  if (!id) {
-    return res.status(400).send("Missing video ID");
+  // 🚨 แก้จุดที่ 1: เช็คว่าถ้าไม่มี ID หรือ ID ไม่ใช่ตัวเลขปกติ (เช่น ตัวอักษรมั่ว, +1)) ให้ดีดออก 404 ทันที
+  if (!id || isNaN(id)) {
+    return res.status(404).send("Video not found");
   }
 
   // ดึงข้อมูลเพื่อเอาชื่อเรื่อง (topic) มาทำ URL สวยๆ
   db.get("SELECT topic FROM media WHERE id = ?", [id], (err, row) => {
     if (err || !row) {
-      // ถ้ามีข้อผิดพลาด หรือไม่เจอข้อมูล ให้ส่งไปแบบไม่มีชื่อเรื่องเพื่อเซฟระบบ
-      return res.redirect(`/watch/${id}`);
+      // 🚨 แก้จุดที่ 2: ถ้าหาไอดีนี้ในฐานข้อมูลไม่เจอจริงๆ ให้ส่ง 404 ตัดบทไปเลย ไม่ต้องสั่งรีไดเรกต์วนลูปแล้ว
+      return res.status(404).send("Video not found 404");
     }
 
-    // แปลงชื่อเรื่องให้เป็นมิตรกับ URL (เปลี่ยนช่องว่างเป็น -, ลบสแลชออกเพื่อป้องกัน Route พัง)
+    // แปลงชื่อเรื่องให้เป็นมิตรกับ URL
     const safeTopic = encodeURIComponent(row.topic.replace(/ /g, '-').replace(/\//g, ''));
 
-    // ⭐️ พระเอกของงาน: สั่งย้าย URL ไปเป็นแบบที่ Google ชอบทันที
+    // สั่งย้าย URL ไปเป็นแบบที่ Google ชอบทันที
     res.redirect(`/watch/${id}/${safeTopic}`);
   });
 });
@@ -343,14 +346,24 @@ app.get('/watch', (req, res) => {
 app.get('/watch/:id/:topic?', (req, res) => {
   const id = req.params.id;
 
+  // 🚨 แก้จุดที่ 3: ดักจับโครงสร้าง URL แบบใหม่ ถ้าตรงตำแหน่ง :id แฮกเกอร์ส่งค่ามั่วที่ไม่ใช่ตัวเลขมา ให้ส่ง 404 ทันที
+  if (!id || isNaN(id)) {
+    return res.status(404).send("Video not found");
+  }
+
   // 1. ดึงข้อมูลวิดีโอหลักที่กำลังดู
   db.get("SELECT * FROM media WHERE id = ?", [id], (err, row) => {
-    if (err) return res.status(500).send(err.message);
-    if (!row) return res.status(404).send("Video not found");
+    // 🚨 แก้จุดที่ 4: เปลี่ยนจากพ่นข้อความระบบพัง (500) ให้ส่ง 404 แทน เพื่อเซฟคะแนน Google Search Console
+    if (err || !row) {
+      return res.status(404).send("Video not found");
+    }
 
     // 2. ดึงวิดีโอแนะนำสุ่ม 10 ตัว (ยกเว้นตัวที่กำลังดู)
     db.all("SELECT * FROM media WHERE id != ? ORDER BY RANDOM() LIMIT 10", [id], (err2, randoms) => {
-      if (err2) return res.status(500).send(err2.message);
+      if (err2) {
+        // ถ้าเกิดเออร์เรอร์แปลกๆ ในคำสั่ง SQL ย่อย ให้ดีดออก 404 เพื่อความปลอดภัย
+        return res.status(404).send("Video not found");
+      }
 
       // 3. ดึงคีย์เวิร์ดแท็กจากฐานข้อมูลเพื่อเอาไปทำ SEO เมนูด้านขวา (SSR)
       db.all("SELECT DISTINCT tag FROM media WHERE tag IS NOT NULL AND tag != '' LIMIT 15", [], (err3, tagRows) => {
