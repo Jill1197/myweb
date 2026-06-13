@@ -1,36 +1,49 @@
-<div id="adsContainer" class="grid grid-cols-1 gap-1 md:grid-cols-2 w-full">
-  <p class="text-gray-400">กำลังโหลดโฆษณา...</p>
+<div id="adsContainer" class="grid grid-cols-1 gap-1 md:grid-cols-2 w-full" style="min-height: 90px;">
+  <div class="col-span-full text-center py-4 flex items-center justify-center space-x-2">
+    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+    <p class="text-gray-400 text-sm">กำลังโหลดโฆษณา...</p>
+  </div>
 </div>
 
 <script>
-  // ดึง ads จาก API
+  // ดึง ads จาก API (เปลี่ยนสไตล์การทำงานให้คลีนขึ้น)
   fetch('/api/v1/ads')
     .then(res => res.json())
     .then(ads => {
       const container = document.getElementById('adsContainer');
-      container.innerHTML = ''; // ล้าง placeholder
-
+      
       // กรองเฉพาะ active = 1 และ title = 'ads'
       const activeAds = ads.filter(ad => ad.active === 1 && ad.title === 'ads');
 
       if (!activeAds || activeAds.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center">ไม่มีโฆษณา</p>';
+        container.innerHTML = '<p class="text-gray-400 text-center col-span-full py-2">ไม่มีโฆษณา</p>';
+        // คืนค่าความสูงให้ยืดหยุ่นถ้าไม่มีโฆษณาจริงๆ หน้าเว็บจะได้ไม่โหว่
+        container.style.minHeight = 'auto';
         return;
       }
 
+      // ล้าง placeholder ออกทีเดียวตอนข้อมูลพร้อม
+      container.innerHTML = ''; 
+      container.style.minHeight = 'auto'; // ปลดล็อกความสูงให้ขยายตามจำนวนจริง
+
       activeAds.forEach((ad, index) => {
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-center rounded-lg overflow-hidden';
+        div.className = 'flex items-center justify-center rounded-lg overflow-hidden bg-gray-800/30';
 
         const a = document.createElement('a');
         a.href = ad.click_url || '#';
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
+        a.className = 'block w-full';
 
         const img = document.createElement('img');
         img.src = ad.video_url || ad.thumbnail_url || '#';
         img.alt = `โฆษณา ${index + 1}`;
-        img.className = 'w-full max-h-[200px] object-contain';
+        // 💡 แก้จุดนี้: ล็อกสัดส่วนความกว้างยาวและใส่ loading="lazy" ป้องกันกระตุกและประหยัดเน็ตมือถือ
+        img.width = 468;
+        img.height = 90;
+        img.loading = 'lazy';
+        img.className = 'w-full max-h-[200px] object-contain block mx-auto';
 
         a.appendChild(img);
         div.appendChild(a);
@@ -39,7 +52,8 @@
     })
     .catch(err => {
       console.error('โหลดโฆษณาไม่สำเร็จ:', err);
-      document.getElementById('adsContainer').innerHTML =
-        '<p class="text-gray-400 text-center">โหลดโฆษณาไม่สำเร็จ</p>';
+      const container = document.getElementById('adsContainer');
+      container.innerHTML = '<p class="text-gray-400 text-center col-span-full py-2">โหลดโฆษณาไม่สำเร็จ</p>';
+      container.style.minHeight = 'auto';
     });
 </script>

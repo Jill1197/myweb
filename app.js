@@ -10,6 +10,7 @@ const morgan = require('morgan');
 const multer = require('multer');
 const tmp = require('tmp');
 const sqlite3 = require('sqlite3').verbose();
+const sharp = require('sharp');
 
 // import redis
 const { createClient } = require('redis');
@@ -34,37 +35,64 @@ if (!fs.existsSync(IMAGE_CACHE_DIR)) {
   fs.mkdirSync(IMAGE_CACHE_DIR, { recursive: true });
 }
 
+/**
+ * ฟังก์ชันดาวน์โหลด บีบอัดรูปภาพภายนอกเป็น WebP และทำ Cache ระบบ 2 ชั้น
+ */
 async function cacheImage(url) {
+  if (!url || url === '#') return url;
+
   const hash = crypto.createHash('md5').update(url).digest('hex');
-  const ext = path.extname(url.split('?')[0]) || '.jpg';
+  // ⚡️ บังคับใช้นามสกุล .webp ทั้งหมด เพื่อให้เบราว์เซอร์หน้าบ้านโหลดเร็วและอ่านง่าย
+  const ext = '.webp'; 
   const filePath = path.join(IMAGE_CACHE_DIR, `${hash}${ext}`);
   const localUrl = `/cache_images/${hash}${ext}`;
 
   // 1️⃣ เช็คใน Redis ก่อน
   const redisKey = `image_cache:${hash}`;
-  const cached = await redisClient.get(redisKey);
-
-  if (cached && fs.existsSync(filePath)) {
-    // Redis บอกว่ามีแล้ว + ไฟล์มีอยู่ → ใช้ไฟล์เดิม
-    return localUrl;
-  }
-
-  // 2️⃣ ถ้าไม่มี → ดาวน์โหลดรูป
+  
   try {
-    const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
-    fs.writeFileSync(filePath, response.data);
+    const cached = await redisClient.get(redisKey);
 
-    // 3️⃣ อัปเดต Redis ว่ารูปถูก cache แล้ว
-    // กำหนด TTL เช่น 7 วัน (7*24*60*60 วินาที)
+    if (cached && fs.existsSync(filePath)) {
+      // Redis มีประวัติ + ไฟล์ภาพดิสก์ยังมีอยู่จริง → ดึงไปใช้งานทันที (เร็วระดับ 1-2ms)
+      return localUrl;
+    }
+
+    // 2️⃣ ถ้าไม่มีการทำ Cache หรือไฟล์หาย → ทำการดาวน์โหลดรูปภาพใหม่
+    const response = await axios.get(url, { 
+      responseType: 'arraybuffer', 
+      timeout: 10000,
+      headers: {
+        // ใส่ User-Agent จำลองเบราว์เซอร์ เพื่อป้องกันเว็บต้นทางบล็อกการดึงรูป (403 Forbidden)
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    // 3️⃣ ⚡️ ชั้นประมวลผลพิเศษ (Image Optimization Pipeline) ด้วย Sharp
+    // บดขนาดจากระดับ MB ให้เหลือหลัก KB แปลง GIF หนักๆ ให้กลายเป็น WebP นิ่งๆ เบาหวิว
+    await sharp(response.data)
+      .resize(320, 180, { 
+        fit: 'cover',             // ครอปสัดส่วนให้ตรง 16:9 พอดีตู้แสดงผลหน้าบ้าน ไม่บิดเบี้ยว
+        withoutEnlargement: true  // ถ้ารูปต้นฉบับเล็กอยู่แล้ว ไม่ต้องขยายให้ภาพแตกค้าง
+      })
+      .webp({ 
+        quality: 75,              // บีบอัดเนื้อภาพที่ 75% (ขนาดลดลง 80-90% แต่ความชัดยังดีเยี่ยม)
+        smartSubsample: true 
+      })
+      .toFile(filePath);          // เขียนไฟล์ WebP ประสิทธิภาพสูงลง Disk เซิร์ฟเวอร์
+
+    // 4️⃣ อัปเดต Redis บันทึกประวัติสำเร็จ
+    // กำหนด TTL 7 วัน (7*24*60*60 วินาที) ตามที่คุณตั้งค่าระบบไว้เดิม
     await redisClient.setEx(redisKey, 7 * 24 * 60 * 60, 'cached');
 
     return localUrl;
+
   } catch (err) {
-    console.error('Error caching image:', err.message);
-    return url; // fallback
+    console.error(`❌ Error caching/optimizing image for ${url}:`, err.message);
+    // หากเกิดปัญหาเซิร์ฟเวอร์พังหรือเว็บต้นทางปิดหนี ให้ส่ง URL เดิมเป็น Fallback หน้าเว็บจะได้ไม่โล่ง
+    return url; 
   }
 }
-
 // ================= Punycode ==================
 
 require('dotenv').config();
@@ -136,6 +164,7 @@ app.get('/logout', (req, res) => {
 });
 
 // List media (public)
+// List media (public)
 app.get('/', async (req, res) => {
   const pageParam = parseInt(req.query.page, 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -151,19 +180,30 @@ app.get('/', async (req, res) => {
 
     // ดึงเฉพาะหน้าที่ต้องการ (เรียงล่าสุดก่อน)
     db.all(
-      "SELECT * FROM media ORDER BY id DESC LIMIT ? OFFSET ?",
+      "SELECT id, topic, image_embed FROM media ORDER BY id DESC LIMIT ? OFFSET ?", // ⚡️ ปรับเป็นเลือกคอลัมน์แทน SELECT * เพื่อความเบา
       [limit, offset],
       async (err2, mediaList) => {
         if (err2) return res.status(500).send(err2.message);
 
-        // ⭐⭐ ทำ cache รูปภาพตรงนี้ ⭐⭐
-        for (let item of mediaList) {
-          if (item.image_embed) {
-            item.image_embed = await cacheImage(item.image_embed);
+        // ⭐⭐ ⚡️ ปลดล็อกคอขวด: สั่งให้ดาวน์โหลดและบีบอัดภาพ 12 รูปพร้อม ๆ กันในวินาทีเดียว
+        try {
+          if (mediaList && mediaList.length > 0) {
+            const cachePromises = mediaList.map(async (item) => {
+              if (item.image_embed) {
+                item.image_embed = await cacheImage(item.image_embed);
+              }
+              return item;
+            });
+            // รอกลุ่ม Promise ทั้งหมดประมวลผลเสร็จพร้อมกัน (จากที่เคยรอนานหลายวินาที จะเหลือเท่าเวลารูปที่ช้าที่สุดรูปเดียว)
+            await Promise.all(cachePromises);
           }
+        } catch (cacheErr) {
+          console.error("❌ Error running bulk image cache:", cacheErr.message);
+          // ปล่อยผ่านเพื่อให้หน้าเว็บยังเปิดทำงานต่อได้ ไม่พังงอแงลงกลางทาง
         }
 
-        db.all("SELECT * FROM tags", [], (err3, tags) => {
+        // ดึง Tags ไปแสดงผลต่อ
+        db.all("SELECT name FROM tags", [], (err3, tags) => { // ⚡️ ดึงเฉพาะคอลัมน์ name พอ
           if (err3) return res.status(500).send(err3.message);
 
           res.render('index', {
@@ -705,6 +745,7 @@ app.post('/api/v1/media/:id/view', (req, res) => {
   });
 });
 
+// ==== top views
 app.get('/api/v1/top-views', (req, res) => {
   db.all("SELECT * FROM media ORDER BY views DESC", [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
@@ -712,6 +753,27 @@ app.get('/api/v1/top-views', (req, res) => {
     res.json(rows);
   });
 });
+
+app.get('/api/v2/top-views', (req, res) => {
+  // ⚡️ ดึงเฉพาะคอลัมน์ที่หน้าบ้านใช้เรนเดอร์จริงๆ และล็อกจำนวนไว้ที่ 5 ตัวพอ
+  const query = "SELECT id, topic, image_embed, views FROM media ORDER BY views DESC LIMIT 5";
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'No videos found' });
+    }
+
+    // กำหนด Cache-Control ให้เบราว์เซอร์หน้าบ้านช่วยจำด้วย 10 นาที ไม่ต้องวิ่งมาขอหลังบ้านถี่ๆ
+    res.setHeader('Cache-Control', 'public, max-age=600');
+    res.json(rows);
+  });
+});
+
+// ==== top views
 
 app.get('/api/v1/top-views/:limit', (req, res) => {
   const limit = parseInt(req.params.limit, 10);

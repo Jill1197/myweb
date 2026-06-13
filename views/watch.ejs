@@ -6,12 +6,10 @@
   <link rel="icon" href="/favicon.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- SEO: ใส่ Title และ Meta Description ให้ดึงคีย์เวิร์ดจากตัวแปร -->
-  <title>ดู <%= media.topic %>  ออนไลน์ดูฟรี | JAV789VK</title></title>
+  <title>ดู <%= media.topic %>  ออนไลน์ดูฟรี | JAV789VK</title>
   <meta name="description" content="รับชมวิดีโอ <%= media.topic %> หมวดหมู่ <%= media.tag || '' %> ดูออนไลน์ฟรี คมชัด ไม่สะดุด อัปเดตใหม่ล่าสุดที่นี่" />
   <meta name="keywords" content="<%= media.tag %>, ดูวิดีโอ, ดู<%= media.topic %>" />
 
-  <!-- Open Graph สำหรับแชร์ลงโซเชียล -->
   <meta property="og:title" content="ดู <%= media.topic %> ออนไลน์ ฟรีล่าสุด" />
   <meta property="og:description" content="รับชมวิดีโอ <%= media.topic %> หมวดหมู่ <%= media.tag || '' %> ดูออนไลน์ฟรี คมชัด" />
   <meta property="og:image" content="<%= typeof randomVideos !== 'undefined' && randomVideos.length > 0 ? randomVideos[0].image_embed : '/images/placeholder.png' %>" />
@@ -28,12 +26,13 @@
   <style>
   .video-container { 
     position: relative; 
-    /* เดิม 56.25% ปรับเป็น 70.3% เพื่อขยายขนาดขึ้น 25% */
-    padding-bottom: 70.3%; 
+    /* 🛠️ แก้ไข: ปรับจาก 70.3% กลับมาเป็น 56.25% (มาตรฐาน 16:9) เพื่อไม่ให้สัดส่วนเครื่องเล่นสูงและเบี้ยวโย้เย้ */
+    padding-bottom: 56.25%; 
     height: 0; 
     overflow: hidden; 
     max-width: 100%; 
     margin-bottom: 20px; 
+    background: #000; /* ล็อคพื้นหลังสีดำสนิท ไม่ดึงรูปภาพ Preview มาใช้ที่ตัวเครื่องเล่น */
   }
   
   .video-container iframe, .video-container video { 
@@ -58,12 +57,14 @@
     z-index: 20; 
   }
   
+  /* 🛠️ แก้ไข: ล็อคขนาดปุ่มไม่ให้โดน Flex ยืดจนขยายใหญ่ระเบิดคับจอ */
   .overlay-play button { 
     background: #06b6d4; 
     color: #fff; 
-    font-size: 26px; 
+    font-size: 20px; 
     font-weight: bold; 
-    padding: 20px 40px; 
+    width: 200px;  /* ล็อคความกว้างปุ่มพอดีคำ */
+    height: 60px;  /* ล็อคความสูงปุ่ม */
     border: none; 
     border-radius: 14px; 
     cursor: pointer; 
@@ -80,10 +81,7 @@
 
   <%- include('components/header') %>
 
-  <!--Popunder-->
   <script src="https://pl29268871.profitablecpmratenetwork.com/8d/be/33/8dbe33b13c755fff89f4f0d6b50eb94c.js"></script>
-  <!--Popunder-->
-
   <main class="container mx-auto px-6 py-8">
     <%- include('components/advert', { numberOfAds: 10 }) %>
     <div class="mt-5">
@@ -96,9 +94,7 @@
     </div>
     <div class="flex flex-col lg:flex-row gap-8 mt-5">
 
-      <!-- Video Content -->
       <div class="w-full lg:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
-        <!-- Player -->
         <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 mt-4">
           <%= media.topic %>
         </h1>
@@ -111,6 +107,17 @@
             ข้าม
           </button>
           <iframe id="apiVideo" src="" allowfullscreen class="mainVideo rounded-lg shadow-md" style="display:none;"></iframe>
+        </div>
+
+        <div id="media-thumbnail-preview" class="mt-4 mb-6">
+          <p class="text-xs text-gray-400 mb-2">📸 ภาพตัวอย่างวิดีโอเรื่องนี้:</p>
+          <div class="relative aspect-video w-full max-w-md mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-md border border-gray-700">
+            <img src="<%= media.image_embed || '/images/placeholder.png' %>" 
+                 alt="Thumbnail <%= media.topic %>" 
+                 class="w-full h-full object-cover"
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='/images/placeholder.png'">
+          </div>
         </div>
 
         <div class="flex justify-center">
@@ -163,7 +170,6 @@
           จำนวนผู้ชม: <span class="text-yellow-400 font-semibold"><%= media.views || 0 %></span> คน
         </p>
 
-        <!-- หมวดหมู่คีย์เวิร์ด -->
         <div class="mt-4">
           <span class="text-base font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">หมวดหมู่คีย์เวิร์ด:</span>
           <div class="inline-block ml-2">
@@ -183,7 +189,6 @@
           </a>
         </div>
 
-        <!-- Random Videos Section -->
         <section class="mt-8 p-4">
           <h2 class="text-xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
             วิดีโออื่น ๆ ที่คุณอาจชอบ 🎲
@@ -210,7 +215,6 @@
         </section>
       </div>
 
-      <!-- sidebar -->
       <aside class="w-full lg:w-1/4">
         <div class="bg-gray-800 p-4 rounded-lg shadow-lg h-[620px]">
           <h2 class="text-xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3">
@@ -265,7 +269,8 @@
         adsElements = data.map((ad, index) => {
           const videoEl = document.createElement('video');
           videoEl.id = `ads${index}`;
-          videoEl.className = "rounded-lg shadow-md";
+          // 🛠️ สิ่งที่เพิ่มให้ดีขึ้น: เติมคลาสคุมขนาดโฆษณาให้เต็มจอกรอบเครื่องเล่นพอดีเป๊ะ
+          videoEl.className = "rounded-lg shadow-md w-full h-full object-cover absolute top-0 left-0 z-20";
           videoEl.playsInline = true;
           videoEl.webkitPlaysInline = true;
           const source = document.createElement('source');
