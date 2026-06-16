@@ -320,24 +320,15 @@ app.get('/delete/:id', isAdmin, (req, res) => {
 // ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
 app.get('/watch', (req, res) => {
   const id = req.query.id;
+  if (!id || isNaN(id)) return res.status(404).send("Video not found");
 
-  // 🚨 แก้จุดที่ 1: เช็คว่าถ้าไม่มี ID หรือ ID ไม่ใช่ตัวเลขปกติ (เช่น ตัวอักษรมั่ว, +1)) ให้ดีดออก 404 ทันที
-  if (!id || isNaN(id)) {
-    return res.status(404).send("Video not found");
-  }
-
-  // ดึงข้อมูลเพื่อเอาชื่อเรื่อง (topic) มาทำ URL สวยๆ
   db.get("SELECT topic FROM media WHERE id = ?", [id], (err, row) => {
-    if (err || !row) {
-      // 🚨 แก้จุดที่ 2: ถ้าหาไอดีนี้ในฐานข้อมูลไม่เจอจริงๆ ให้ส่ง 404 ตัดบทไปเลย ไม่ต้องสั่งรีไดเรกต์วนลูปแล้ว
-      return res.status(404).send("Video not found");
-    }
+    if (err || !row) return res.status(404).send("Video not found");
 
-    // แปลงชื่อเรื่องให้เป็นมิตรกับ URL
     const safeTopic = encodeURIComponent(row.topic.replace(/ /g, '-').replace(/\//g, ''));
-
-    // สั่งย้าย URL ไปเป็นแบบที่ Google ชอบทันที
-    res.redirect(`/watch/${id}/${safeTopic}`);
+    
+    // 🚨 ใส่ 301 ตรงนี้ครับ!
+    res.redirect(301, `/watch/${id}/${safeTopic}`);
   });
 });
 
