@@ -43,12 +43,6 @@
   <div class="min-h-screen">
     <%- include('components/header') %>
     <%- include('components/sidebar') %>
-    <!-- BEGIN AADS AD UNIT 2435819 -->
-        <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
-          <iframe data-aa='2435819' src='//acceptable.a-ads.com/2435819/?size=Adaptive'
-                            style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
-        </div>
-    <!-- END AADS AD UNIT 2435819 -->
     <script type="text/javascript">
     aclib.runAutoTag({
         zoneId: 'gecuycctbs',
@@ -59,16 +53,35 @@
 
       <div class="flex flex-col lg:flex-row gap-8 mt-5">
         <div class="w-full lg:w-3/4">
+          
           <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyan-400 pl-4">
             หนังยอดนิยม 🔥
           </h2>
 
-          <div id="top-views-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+          <div class="relative w-full mb-12">
+            <button onclick="scrollSlider('left')" class="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-cyan-600 text-white p-2 rounded-r-lg transition">
+              ❮
+            </button>
+
+            <div id="top-views-container" 
+                class="flex flex-row overflow-x-auto gap-4 pb-4 no-scrollbar scroll-smooth" 
+                style="scrollbar-width: none; -ms-overflow-style: none;">
+              <div class="flex items-center justify-center w-full py-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+              </div>
+            </div>
+
+            <button onclick="scrollSlider('right')" class="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-cyan-600 text-white p-2 rounded-l-lg transition">
+              ❯
+            </button>
+          </div>
+
+          <!-- <div id="top-views-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
             <div class="col-span-full text-center py-10">
               <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mb-2"></div>
               <p class="text-gray-400 text-sm">กำลังโหลดหนังยอดนิยม...</p>
             </div>
-          </div>
+          </div> -->
 
           <!---fetch videos most popular 5 อันดับ api คือ /api/v1/top-views --->
           <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-cyan-400 pl-4">
@@ -100,6 +113,13 @@
            <ins class="eas6a97888e31" data-zoneid="5912860"></ins>
           <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
           <!-- exoclick Video Slider -->
+          
+          <!-- BEGIN AADS AD UNIT 2435819 -->
+          <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
+            <iframe data-aa='2435819' src='//acceptable.a-ads.com/2435819/?size=Adaptive'
+                                  style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
+          </div>
+          <!-- END AADS AD UNIT 2435819 -->
 
           <div style="position: absolute; z-index: 99999">
                 <input autocomplete="off" type="checkbox" id="aadsstickymognggqu" hidden />
@@ -187,6 +207,18 @@
   </script>
 
   <script>
+      // ฟังก์ชันสั่งเลื่อน
+    function scrollSlider(direction) {
+      const container = document.getElementById('top-views-container');
+      const scrollAmount = 300; // ระยะการเลื่อน
+      if (direction === 'left') {
+        container.scrollLeft -= scrollAmount;
+      } else {
+        container.scrollLeft += scrollAmount;
+      }
+    }
+
+    // อัปเดตฟังก์ชัน fetchTopViews ให้สร้างโครงสร้างแบบคอลัมน์แนวนอน
     async function fetchTopViews() {
       try {
         const response = await fetch('/api/v1/top-views/5');
@@ -195,31 +227,29 @@
 
         if (data && data.length > 0) {
           container.innerHTML = data.map((media, index) => `
-          <div class="media-item group relative">
-            <div class="absolute top-0 left-0 bg-red-600 text-white font-bold px-2 py-1 rounded-br-lg z-10 text-xs">
-              TOP ${index + 1}
+            <div class="flex-shrink-0 w-[180px] sm:w-[200px] group relative">
+              <div class="absolute top-0 left-0 bg-red-600 text-white font-bold px-2 py-1 rounded-br-lg z-10 text-xs">
+                TOP ${index + 1}
+              </div>
+              <a href="/watch?id=${media.id}" class="block overflow-hidden rounded-lg">
+                <img src="${media.image_embed || '/images/placeholder.png'}"
+                    class="w-full h-40 object-cover transform group-hover:scale-105 transition duration-300"
+                    alt="${media.topic}">
+              </a>
+              <div class="content mt-2">
+                <h3 class="text-white text-[13px] font-semibold line-clamp-1">${media.topic}</h3>
+                <p class="text-gray-400 text-[10px]">${Number(media.views).toLocaleString()} views</p>
+              </div>
             </div>
-            <a href="/watch?id=${media.id}" class="block overflow-hidden rounded-lg">
-              <img src="${media.image_embed || '/images/placeholder.png'}"
-                   class="w-full h-40 object-cover transform group-hover:scale-105 transition duration-300"
-                   alt="${media.topic}">
-            </a>
-            <div class="content mt-2">
-              <h3 class="text-white text-[13px] font-semibold line-clamp-1">${media.topic}</h3>
-              <p class="text-gray-400 text-[10px]">${Number(media.views).toLocaleString()} views</p>
-            </div>
-          </div>
-        `).join('');
+          `).join('');
         } else {
-          container.innerHTML = '<p class="text-gray-500">ไม่มีข้อมูลหนังยอดนิยม</p>';
+          container.innerHTML = '<p class="text-gray-500 w-full text-center">ไม่มีข้อมูลหนังยอดนิยม</p>';
         }
       } catch (error) {
         console.error('Error fetching top views:', error);
-        document.getElementById('top-views-container').innerHTML = '';
       }
     }
 
-    // รันฟังก์ชันเมื่อโหลดหน้าเว็บเสร็จ
     document.addEventListener('DOMContentLoaded', fetchTopViews);
   </script>
 </body>
