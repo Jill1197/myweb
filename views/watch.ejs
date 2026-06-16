@@ -148,14 +148,31 @@
         </script>
 
         <div class="flex justify-center mt-4">
-          <button onclick="openDoubleLink(event)" class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold text-white">
-            แจ้งคลิปเสีย
-          </button>
-        </div>
-        <script>
-        function openDoubleLink(e) {
-            window.open("/ads", "_blank");
-            window.location.href = "/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>";
+    <button onclick="handleReportAndAds(event)" class="px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-500 transition font-semibold text-white">
+        แจ้งคลิปเสีย
+    </button>
+</div>
+
+<script>
+function handleReportAndAds(e) {
+    // 1. เปิดหน้าโฆษณาแยกแท็บใหม่ตามปกติ
+    window.open("/ads", "_blank");
+    
+      // 2. ใช้ Fetch API ยิงหาหลังบ้านแบบเงียบๆ ไม่เปลี่ยนหน้าเว็บ
+      // แนะนำให้ส่งเป็น POST (ถ้าหลังบ้านรองรับ) เพื่อความปลอดภัยสูงสุดเรื่อง SEO
+      fetch("/api/v1/report?topic=<%= encodeURIComponent(media.topic) %>", {
+          method: 'GET' // หากหลังบ้านเขียนเราต์ดักไว้เป็น GET ให้ใช้ GET ไปก่อนครับ
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("⚠️ แจ้งคลิปเสียเรียบร้อยแล้ว ทีมงานจะรีบดำเนินการตรวจสอบครับ");
+                } else {
+                    alert("❌ มีข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+                }
+            })
+            .catch(err => {
+                console.error("Report error:", err);
+            });
         }
         </script>
 

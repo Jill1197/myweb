@@ -1,4 +1,17 @@
 User-agent: *
-Allow: /
+# บล็อกไม่ให้บอทเข้าถึงระบบ API และระบบรายงานเด็ดขาด (แก้ปัญหา URL ขยะยาวๆ)
+Disallow: /api/
+Disallow: /api/v1/
 
-Sitemap: https://www.jav789vk.com/sitemap.xml
+# บล็อกหน้าจัดหมวดหมู่ที่มีเนื้อหาซ้ำซ้อนกัน (แก้ปัญหา "ซ้ำ แต่ไม่มีที่ผู้ใช้เลือกเป็นรูปแบบบัญญัติ")
+Disallow: /tag/
+Disallow: /tags/
+Disallow: /category/
+Disallow: /search/
+
+# อนุญาตให้ Google เข้ามาเก็บข้อมูลหน้าแรกและหน้าดูคลิปหลักได้ตามปกติ
+Allow: /
+Allow: /watch
+
+# ลิงก์ไปยังสเตรทแมพเวอร์ชันหลักที่ถูกต้อง (ไม่มี www)
+Sitemap: https://jav789vk.com/sitemap.xml

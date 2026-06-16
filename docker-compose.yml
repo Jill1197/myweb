@@ -6,13 +6,21 @@ services:
   redis:
     image: redis:7
     container_name: myweb-redis
+<<<<<<< HEAD
     restart: unless-stopped  
+=======
+    restart: unless-stopped  # เพิ่มตรงนี้
+>>>>>>> 61f8f8a (Update Code From Server)
     networks:
       - mynetwork
 
   app:
     build: .
+<<<<<<< HEAD
     restart: unless-stopped  
+=======
+    restart: unless-stopped  # เพิ่มตรงนี้
+>>>>>>> 61f8f8a (Update Code From Server)
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
@@ -29,7 +37,11 @@ services:
 
   caddy:
     image: caddy:2
+<<<<<<< HEAD
     restart: unless-stopped  
+=======
+    restart: unless-stopped  # เพิ่มตรงนี้
+>>>>>>> 61f8f8a (Update Code From Server)
     ports:
       - "80:80"
       - "443:443"

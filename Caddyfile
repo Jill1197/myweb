@@ -1,8 +1,19 @@
+# บล็อกรวมสำหรับหน้าเว็บหลัก (รองรับทั้งแบบมี www และไม่มี www)
 jav789vk.com, www.jav789vk.com {
-    reverse_proxy app:3000
+    reverse_proxy app:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
     tls MorrisJill1197@proton.me
 }
+
+# บล็อกสำหรับระบบ API หลังบ้าน
 api.jav789vk.com {
-    reverse_proxy video-streaming-app:4000
+    reverse_proxy video-streaming-app:4000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
     tls MorrisJill1197@proton.me
 }
