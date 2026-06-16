@@ -318,10 +318,6 @@ app.get('/delete/:id', isAdmin, (req, res) => {
 
 // ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
 // ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
-<<<<<<< HEAD
-// ตัวจัดการ /watch แบบไฮบริด: เข้าแบบเก่า (?id=) แต่จะเปลี่ยนเป็นแบบใหม่ (/watch/id/topic) อัตโนมัติ!
-=======
->>>>>>> 61f8f8a (Update Code From Server)
 app.get('/watch', (req, res) => {
   const id = req.query.id;
 
@@ -334,11 +330,7 @@ app.get('/watch', (req, res) => {
   db.get("SELECT topic FROM media WHERE id = ?", [id], (err, row) => {
     if (err || !row) {
       // 🚨 แก้จุดที่ 2: ถ้าหาไอดีนี้ในฐานข้อมูลไม่เจอจริงๆ ให้ส่ง 404 ตัดบทไปเลย ไม่ต้องสั่งรีไดเรกต์วนลูปแล้ว
-<<<<<<< HEAD
-      return res.status(404).send("Video not found 404");
-=======
       return res.status(404).send("Video not found");
->>>>>>> 61f8f8a (Update Code From Server)
     }
 
     // แปลงชื่อเรื่องให้เป็นมิตรกับ URL
@@ -1005,8 +997,4 @@ app.use((err, req, res, next) => {
     res.status(404).send('404 Not Found');
 });
 
-<<<<<<< HEAD
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
-=======
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
->>>>>>> 61f8f8a (Update Code From Server)

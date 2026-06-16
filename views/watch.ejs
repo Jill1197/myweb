@@ -102,15 +102,32 @@
         <h1 class="text-2xl font-bold text-white mb-4 border-l-4 border-cyan-400 pl-3 mt-4">
           <%= media.topic %>
         </h1>
-        <div id="player-api" class="video-container relative">
-          <div class="overlay-play">
-            <button>เล่นวิดีโอ</button>
+        
+        <div id="player-api" class="video-container relative rounded-xl overflow-hidden bg-black shadow-2xl border border-gray-700/50 group">
+          
+          <img id="player-poster" 
+               src="<%= typeof media !== 'undefined' && media.image_embed ? media.image_embed : '/images/placeholder.png' %>" 
+               alt="ภาพตัวอย่างวิดีโอ <%= media.topic %>" 
+               class="absolute inset-0 w-full h-full object-cover z-10 transition duration-500 group-hover:scale-102 filter brightness-90" 
+               loading="lazy" 
+               onerror="this.onerror=null; this.src='/images/placeholder.png'" />
+          
+          <div class="overlay-play absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer z-20 transition duration-300 hover:bg-black/20">
+            <button class="transform transition duration-300 hover:scale-110 active:scale-95 shadow-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              เล่นวิดีโอ
+            </button>
           </div>
-          <div id="ads-container"></div>
-          <button id="skipBtn" class="absolute bottom-4 right-4 bg-red-600/70 text-white px-10 py-2 rounded shadow hover:bg-red-500 transition hidden font-semibold">
+          
+          <div id="ads-container" class="absolute inset-0 z-20 pointer-events-none"></div>
+          
+          <button id="skipBtn" class="absolute bottom-4 right-4 bg-red-600/90 hover:bg-red-500 text-white px-10 py-2 rounded-lg shadow-xl transition hidden font-semibold z-30">
             ข้าม
           </button>
-          <iframe id="apiVideo" src="" allowfullscreen class="mainVideo rounded-lg shadow-md" style="display:none;"></iframe>
+          
+          <iframe id="apiVideo" src="" allowfullscreen class="mainVideo absolute inset-0 w-full h-full z-10 rounded-xl" style="display:none;"></iframe>
         </div>
 
         <div class="flex justify-center">
