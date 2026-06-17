@@ -1,17 +1,27 @@
 User-agent: *
-# บล็อกไม่ให้บอทเข้าถึงระบบ API และระบบรายงานเด็ดขาด (แก้ปัญหา URL ขยะยาวๆ)
+
+# ❌ 1. บล็อกระบบหลังบ้านและการจัดการข้อมูล (Admin & Manage)
+Disallow: /admin/
+Disallow: /manage
+Disallow: /add
+Disallow: /edit/
+Disallow: /delete/
+
+# ❌ 2. บล็อกระบบภายในที่ไม่จำเป็นต้องทำ SEO (API & Utilities)
 Disallow: /api/
 Disallow: /api/v1/
+Disallow: /video-proxy/
+Disallow: /image-proxy/
+Disallow: /short-link
+Disallow: /shorten
+Disallow: /links/
 
-# บล็อกหน้าจัดหมวดหมู่ที่มีเนื้อหาซ้ำซ้อนกัน (แก้ปัญหา "ซ้ำ แต่ไม่มีที่ผู้ใช้เลือกเป็นรูปแบบบัญญัติ")
-Disallow: /tag/
-Disallow: /tags/
-Disallow: /category/
-Disallow: /search/
+# ❌ 3. บล็อกหน้าผลลัพธ์การค้นหาภายในเว็บ (กันปัญหา URL ขยะซ้ำซ้อน)
+Disallow: /search
 
-# อนุญาตให้ Google เข้ามาเก็บข้อมูลหน้าแรกและหน้าดูคลิปหลักได้ตามปกติ
-Allow: /
-Allow: /watch
+# ✅ 4. เปิดทางให้ Google เก็บข้อมูลหน้าแท็กและหน้าวิดีโอได้เต็มที่
+Allow: /tag/
+Allow: /watch/
 
-# ลิงก์ไปยังสเตรทแมพเวอร์ชันหลักที่ถูกต้อง (ไม่มี www)
+# 🗺️ ลิงก์สเปซแมพที่ถูกต้อง
 Sitemap: https://jav789vk.com/sitemap.xml

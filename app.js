@@ -225,6 +225,78 @@ app.get('/load-page', (req, res) => {
   return res.render('load_page');
 });
 
+
+// ==================== GENERATE SITEMAP.XML (DYNAMIC FOR SQLITE3) ====================
+app.get('/sitemap.xml', (req, res) => {
+    // 1. ดึงข้อมูลวิดีโอทั้งหมดจากตาราง media
+    db.all("SELECT id, topic FROM media ORDER BY id DESC", [], (err, mediaList) => {
+        if (err) {
+            console.error("❌ [Sitemap DB Error - Media]:", err.message);
+            mediaList = []; // ป้องกันกรณีดึงพัง ให้เป็นอาเรย์ว่าง
+        }
+
+        // 2. ดึงข้อมูลแท็กทั้งหมดจากตาราง tags เพื่อเอามาสร้างลิงก์หมวดหมู่
+        db.all("SELECT name FROM tags", [], (err2, tagList) => {
+            if (err2) {
+                console.error("❌ [Sitemap DB Error - Tags]:", err2.message);
+                tagList = []; // ป้องกันกรณีดึงพัง ให้เป็นอาเรย์ว่าง
+            }
+
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+            xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+            
+            // ----------------------------------------------------
+            // 🔸 ส่วนที่ 1: หน้าหลัก Static ภายในเว็บของคุณ (บอทเข้าได้ปกติ)
+            // ----------------------------------------------------
+            xml += `  <url><loc>https://jav789vk.com/</loc><priority>1.00</priority></url>\n`;
+            xml += `  <url><loc>https://jav789vk.com/new-videos</loc><priority>0.80</priority></url>\n`;
+            xml += `  <url><loc>https://jav789vk.com/most-popular</loc><priority>0.80</priority></url>\n`;
+
+            // ----------------------------------------------------
+            // 🔸 ส่วนที่ 2: ลิงก์ Tags หมวดหมู่ 
+            // (ปลดล็อกใน robots.txt แล้ว เพื่อให้ Google มาเก็บข้อมูลหน้าแท็กไปทำอันดับ)
+            // ----------------------------------------------------
+            if (tagList && tagList.length > 0) {
+                tagList.forEach(tagItem => {
+                    if (tagItem && tagItem.name) {
+                        const tagName = tagItem.name.trim();
+                        xml += `  <url>\n    <loc>https://jav789vk.com/tag/${encodeURIComponent(tagName)}</loc>\n    <priority>0.80</priority>\n  </url>\n`;
+                    }
+                });
+            }
+
+            // ----------------------------------------------------
+            // 🔸 ส่วนที่ 3: ลิงก์วิดีโอสำหรับเข้าดู (/watch/:id/:topic)
+            // แปลงรูปแบบ URL เหมือนกับโค้ดหน้าหลักของคุณเป๊ะ บอทไม่หลงทางแน่นอน
+            // ----------------------------------------------------
+            if (mediaList && mediaList.length > 0) {
+                mediaList.forEach(mediaItem => {
+                    if (mediaItem && mediaItem.id) {
+                        // เปลี่ยนช่องว่างเป็นขีด (-) ลบเครื่องหมายสแลช (/) และอักขระพิเศษออก
+                        let safeTopic = (mediaItem.topic || '')
+                            .replace(/ /g, '-')
+                            .replace(/\//g, '')
+                            .replace(/[~–+]/g, ''); 
+                        
+                        // ควบคุมความยาวของชื่อไม่ให้ยาวเกินไป
+                        if (safeTopic.length > 100) {
+                            safeTopic = safeTopic.substring(0, 100);
+                        }
+
+                        xml += `  <url>\n    <loc>https://jav789vk.com/watch/${mediaItem.id}/${encodeURIComponent(safeTopic)}</loc>\n    <priority>0.70</priority>\n  </url>\n`;
+                    }
+                });
+            }
+
+            xml += `</urlset>`;
+
+            // ส่งข้อมูลออกไปเป็น XML และตั้ง Header ให้ถูกต้อง
+            res.header('Content-Type', 'application/xml');
+            return res.status(200).send(xml);
+        });
+    });
+});
+
 // Short Link
 
 app.get('/short-link', (req, res) => {
