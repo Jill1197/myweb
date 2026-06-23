@@ -34,6 +34,17 @@ if (!fs.existsSync(IMAGE_CACHE_DIR)) {
   fs.mkdirSync(IMAGE_CACHE_DIR, { recursive: true });
 }
 
+// WAL mode
+db.serialize(() => {
+  db.run("PRAGMA journal_mode=WAL;", (err) => {
+    if (err) {
+      console.error("❌ ไม่สามารถเปิด WAL Mode ได้:", err.message);
+    } else {
+      console.log("🚀 SQLite WAL Mode (Write-Ahead Logging) เริ่มทำงานแล้ว!");
+    }
+  });
+});
+
 async function cacheImage(url) {
   const hash = crypto.createHash('md5').update(url).digest('hex');
   const ext = path.extname(url.split('?')[0]) || '.jpg';
