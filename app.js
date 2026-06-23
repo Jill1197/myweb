@@ -147,6 +147,7 @@ app.get('/logout', (req, res) => {
 });
 
 // List media (public)
+// List media (public) - Version 2 (Parallel Image Caching)
 app.get('/', async (req, res) => {
   const pageParam = parseInt(req.query.page, 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -167,11 +168,19 @@ app.get('/', async (req, res) => {
       async (err2, mediaList) => {
         if (err2) return res.status(500).send(err2.message);
 
-        // ⭐⭐ ทำ cache รูปภาพตรงนี้ ⭐⭐
-        for (let item of mediaList) {
-          if (item.image_embed) {
-            item.image_embed = await cacheImage(item.image_embed);
-          }
+        // 🚀 ⭐ แก้ไขจุดคอขวดเปลี่ยนมาใช้ Promise.all ตรงนี้ ⭐
+        try {
+          // สั่งให้ทุกรูปในลิสต์โยนเข้าฟังก์ชัน cacheImage พร้อม ๆ กันแบบเลนขนาน
+          await Promise.all(
+            mediaList.map(async (item) => {
+              if (item.image_embed) {
+                item.image_embed = await cacheImage(item.image_embed);
+              }
+            })
+          );
+        } catch (cacheErr) {
+          console.error("❌ Parallel caching image error:", cacheErr.message);
+          // ปล่อยผ่านให้เว็บทำงานต่อได้ แม้บางรูปจะโหลดพัง หน้าแรกจะได้ไม่ล่ม 500
         }
 
         db.all("SELECT * FROM tags", [], (err3, tags) => {
