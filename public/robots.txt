@@ -1,27 +1,40 @@
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CloudflareBrowserRenderingCrawler
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
 User-agent: *
+Content-Signal: search=yes,ai-train=no
 
-# ❌ 1. บล็อกระบบหลังบ้านและการจัดการข้อมูล (Admin & Manage)
-Disallow: /admin/
-Disallow: /manage
-Disallow: /add
-Disallow: /edit/
-Disallow: /delete/
-
-# ❌ 2. บล็อกระบบภายในที่ไม่จำเป็นต้องทำ SEO (API & Utilities)
 Disallow: /api/
 Disallow: /api/v1/
-Disallow: /video-proxy/
-Disallow: /image-proxy/
-Disallow: /short-link
-Disallow: /shorten
-Disallow: /links/
 
-# ❌ 3. บล็อกหน้าผลลัพธ์การค้นหาภายในเว็บ (กันปัญหา URL ขยะซ้ำซ้อน)
-Disallow: /search
-
-# ✅ 4. เปิดทางให้ Google เก็บข้อมูลหน้าแท็กและหน้าวิดีโอได้เต็มที่
+Allow: /
+Allow: /watch
 Allow: /tag/
-Allow: /watch/
+Allow: /tags/
+Disallow: /search/
 
-# 🗺️ ลิงก์สเปซแมพที่ถูกต้อง
 Sitemap: https://jav789vk.com/sitemap.xml
