@@ -26,15 +26,12 @@ User-agent: meta-externalagent
 Disallow: /
 
 User-agent: *
-Content-Signal: search=yes,ai-train=no
-
+Disallow: /search/
 Disallow: /api/
 Disallow: /api/v1/
-
 Allow: /
 Allow: /watch
 Allow: /tag/
 Allow: /tags/
-Disallow: /search/
 
 Sitemap: https://jav789vk.com/sitemap.xml

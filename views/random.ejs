@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สุ่มวิดีโอ - JAV789VK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* เพิ่มส่วนนี้ เพื่อให้มั่นใจว่ารูปที่ถูก render มาจะมองเห็นได้ */
+        .image-wrapper img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-300 font-sans">
+
+    <%- include('components/header') %>
+
+        <main class="container mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold text-white mb-6">สุ่มวิดีโอที่คุณต้องการ</h1>
+
+            <div class="mb-8 p-4 bg-gray-800 rounded-lg flex items-center gap-4">
+                <label for="videoCount" class="text-white">จำนวนเรื่อง:</label>
+                <input type="number" id="videoCount" value="5" min="1" max="10"
+                    class="bg-gray-700 text-white px-3 py-1 rounded border border-gray-600 focus:outline-none">
+                <button onclick="loadRandomVideos()"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded transition">
+                    กดสุ่ม!
+                </button>
+            </div>
+
+            <div id="video-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+        </main>
+
+        <script>
+            async function loadRandomVideos() {
+                const count = document.getElementById('videoCount').value;
+                const container = document.getElementById('video-container');
+                container.innerHTML = '<p class="text-white">กำลังสุ่ม...</p>';
+
+                try {
+                    const response = await fetch(`/api/v1/random?value=${count}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        container.innerHTML = '';
+                        result.data.forEach(video => {
+                            const videoItem = `
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-transform duration-200 hover:scale-105">
+            <a href="https://jav789vk.com/watch/${video.id}/${encodeURIComponent(video.topic.replace(/ /g, '-'))}">
+                <div class="aspect-w-16 aspect-h-9 overflow-hidden">
+                    <img src="${video.image_embed}" alt="${video.topic}" class="w-full h-full object-cover" onerror="this.src='/images/placeholder.png'">
+                </div>
+            </a>
+            <div class="p-4">
+                <h2 class="text-white font-bold mb-2 text-lg truncate">${video.topic}</h2>
+                <p class="text-gray-400 text-sm">หมวดหมู่: ${video.tag}</p>
+            </div>
+        </div>
+    `;
+                            container.innerHTML += videoItem;
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-gray-400">ไม่พบข้อมูล</p>';
+                    }
+                } catch (err) {
+                    container.innerHTML = '<p class="text-red-400">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+                }
+            }
+
+            // โหลดข้อมูลครั้งแรกทันทีที่เปิดหน้าเว็บ
+            loadRandomVideos();
+        </script>
+</body>
+
+</html>

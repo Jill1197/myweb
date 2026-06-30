@@ -1053,6 +1053,46 @@ app.get('/api/v1/report', (req, res) => {
   );
 });
 
+app.get('/random', async (req, res) => {
+    const value = parseInt(req.query.value) || 5; // กำหนดค่าเริ่มต้นเป็น 5
+
+    // ดึงข้อมูลจาก SQLite
+    db.all("SELECT id, topic, image_embed, tag FROM media ORDER BY RANDOM() LIMIT ?", [value], (err, rows) => {
+        if (err) {
+            return res.status(500).send("Database Error");
+        }
+        // ส่งตัวแปร rows ไปในชื่อ 'videos' ตามที่คุณต้องการ
+        res.render('random', { videos: rows, currentCount: value });
+    });
+});
+
+app.get('/api/v1/random', async (req, res) => {
+    let value = parseInt(req.query.value) || 1;
+    if (value > 10) value = 10;
+    if (value < 1) value = 1;
+
+    try {
+        // ใช้คำสั่ง .all สำหรับ SQLite
+        // SQLite รองรับการใช้ ? ใน LIMIT ได้โดยตรง
+        const query = "SELECT id,topic,image_embed,tag  FROM media ORDER BY RANDOM() LIMIT ?";
+        
+        db.all(query, [value], (err, rows) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ success: false, message: 'Database query failed' });
+            }
+            res.status(200).json({
+                success: true,
+                count: rows.length,
+                data: rows
+            });
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // ===== Log IP + Method + URL ลงไฟล์แยก =====
 app.use((req, res, next) => {
   const start = Date.now();
