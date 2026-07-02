@@ -36,6 +36,33 @@ db.serialize(() => {
     url TEXT
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,      -- เพิ่มอีเมล
+    password TEXT NOT NULL,          -- รหัสผ่านที่ hash แล้ว
+    plan_type TEXT DEFAULT 'free', 
+    subscription_end DATETIME
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS watch_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    media_id INTEGER,
+    watched_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(media_id) REFERENCES media(id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS user_subscriptions (
+    user_id INTEGER PRIMARY KEY,
+    plan_type TEXT DEFAULT 'free',
+    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_date DATETIME,
+    has_used_free_plan INTEGER DEFAULT 0, -- 0 = ยังไม่เคยใช้, 1 = ใช้ไปแล้ว
+    FOREIGN KEY(user_id) REFERENCES users(id)
+)`);
+
 });
 
 module.exports = db;

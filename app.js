@@ -10,6 +10,7 @@ const morgan = require('morgan');
 const multer = require('multer');
 const tmp = require('tmp');
 const sqlite3 = require('sqlite3').verbose();
+// const userRouter = require('./routes/user');
 
 // import redis
 const { createClient } = require('redis');
@@ -85,7 +86,6 @@ const PASSWORD = process.env.PASSWORD;
 
 const app = express();
 const port = 3000;
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -96,8 +96,11 @@ app.use(express.static('public'));
 app.use(session({
   secret: 'your_secret_key',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false
 }));
+
+const userRouter = require('./routes/user');
+app.use('/user', userRouter);
 
 // -------------------- Logging --------------------
 // เขียน access log
@@ -347,9 +350,13 @@ app.get('/links/:id', (req, res) => {
         // เปลี่ยนจาก .send เป็น .render('status', ...)
         if (err || !row) {
             return res.status(404).render('status', { 
-                tag: '404 - ไม่พบลิงก์',
-                message: 'ขออภัย ลิงก์ที่คุณพยายามเข้าถึงไม่มีอยู่ในระบบ',
-                allTags: [] // หากต้องแสดง Header ข้อมูลอาจจะดึงมาใส่เพิ่มได้ที่นี่
+                tag: '404 - ไม่พบหน้าที่คุณต้องการ',
+                message: 'ขออภัย หน้าที่คุณกำลังเข้าถึงไม่มีอยู่ในระบบ',
+                allTags: [],    // ส่ง Array ว่างไปเผื่อถ้าหน้าเว็บมีการวนลูปแสดงแท็ก
+                mediaList: [],  // ส่ง Array ว่างไปเผื่อถ้าหน้าเว็บมีการวนลูปแสดงวิดีโอ
+                currentPage: 0,
+                totalPages: 0,
+                // user: req.session.user || null// หากต้องแสดง Header ข้อมูลอาจจะดึงมาใส่เพิ่มได้ที่นี่
             });
         }
 
@@ -1052,6 +1059,22 @@ app.get('/api/v1/report', (req, res) => {
     }
   );
 });
+
+
+// User 
+app.get('/user/login', (req, res) => {
+  res.render('user/user-login'); 
+});
+
+app.get('/user/register', (req, res) => {
+  res.render('user/user-register'); 
+});
+
+app.get('/user/timeline', (req, res) => {
+  res.render('user/user-timeline'); 
+});
+
+// User
 
 app.get('/random', async (req, res) => {
     const value = parseInt(req.query.value) || 5; // กำหนดค่าเริ่มต้นเป็น 5
