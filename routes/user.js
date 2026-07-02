@@ -105,6 +105,48 @@ router.get('/profile', (req, res) => {
     });
 });
 
+// --- หน้าเลือกแพ็กเกจ (รับจากฟอร์ม) ---
+const plans = {
+    2: { name: 'Monthly', price: 1.99, plisio_link: 'https://plisio.net/payment-button/new/-TNFSTFgm6wi' },
+    3: { name: 'Yearly', price: 19.99, plisio_link: 'https://plisio.net/payment-button/new/CIvKfB3cC0zP' },
+    4: { name: 'Lifetime', price: 29.99, plisio_link: 'https://plisio.net/payment-button/new/vpphNP4BuJI6' }
+};
+
+// ในไฟล์ routes/user.js ปรับตรงนี้ครับ
+router.post('/subscribe', isAuthenticated, (req, res) => {
+    const { plan_id } = req.body;
+    
+    const plansData = {
+        1: { name: 'Free Plan', price: 0 },
+        2: { name: 'Monthly', price: 1.99, plisio_link: 'https://plisio.net/payment-button/new/-TNFSTFgm6wi' },
+        3: { name: 'Yearly', price: 19.99, plisio_link: 'https://plisio.net/payment-button/new/CIvKfB3cC0zP' },
+        4: { name: 'Lifetime', price: 29.99, plisio_link: 'https://plisio.net/payment-button/new/vpphNP4BuJI6' }
+    };
+
+    const selectedPlan = plansData[plan_id];
+    
+    if (!selectedPlan) {
+        return res.send("ไม่พบแพ็กเกจที่เลือก");
+    }
+
+    // กรณีแผนฟรี
+    if (plan_id == 1) {
+        return res.redirect('/user/timeline');
+    }
+
+    // ส่งตัวแปร plan และ userName ไปให้หน้า EJS
+    res.render('user/user-payment', { 
+        plan: selectedPlan,
+        userName: req.session.user.name 
+    });
+});
+
+// --- หน้าชำระเงิน (แสดง 3 ช่องทาง) ---
+router.get('/payment-page', isAuthenticated, (req, res) => {
+    // กรณีนี้ควรส่ง plan_id มาด้วย หรือเก็บใน session ก่อนหน้า
+    res.render('user/user-payment');
+});
+
 // --- Route ออกจากระบบ ---
 router.get('/logout', (req, res) => {
     req.session.destroy();

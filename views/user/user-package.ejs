@@ -1,34 +1,42 @@
 <h2 class="text-2xl font-bold mb-6 text-white text-center">เลือกแพ็กเกจสมาชิก</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <% 
-        const plans = [
-            { id: 1, name: 'Free Plan', price: 0, desc: 'ทดลองใช้ 1 เดือน' },
-            { id: 2, name: 'Monthly', price: 99, desc: 'รายเดือน' },
-            { id: 3, name: 'Yearly', price: 999, desc: 'รายปี (คุ้มที่สุด)' },
-            { id: 4, name: 'Lifetime', price: 2500, desc: 'ตลอดชีพ' }
-        ];
-    %>
+    <% const plans=[ { id: 1, name: 'Free Plan' , price: 0, usd: 0, desc: 'ทดลองใช้ 1 เดือน' }, { id: 2, name: 'Monthly'
+        , price: 66, usd: 1.99, desc: 'รายเดือน' }, { id: 3, name: 'Yearly' , price: 660, usd: 19.99,
+        desc: 'รายปี (คุ้มที่สุด)' }, { id: 4, name: 'Lifetime' , price: 999, usd: 29.99, desc: 'ตลอดชีพ' } ]; %>
 
-    <% plans.forEach(plan => { %>
-        <div class="border border-gray-600 p-4 rounded-lg bg-gray-700 text-center">
-            <h3 class="font-bold text-lg text-white"><%= plan.name %></h3>
-            <p class="text-sm text-gray-400 mb-2"><%= plan.desc %></p>
-            <div class="text-xl font-bold text-cyan-400 mb-4">
-                <%= plan.price === 0 ? 'ฟรี' : plan.price + ' บาท' %>
-            </div>
-            
-            <% if (plan.id === 1 && hasUsedFreePlan) { %>
-                <button class="bg-gray-500 text-gray-300 w-full py-2 rounded cursor-not-allowed" disabled>
-                    ใช้งานไปแล้ว
-                </button>
-            <% } else { %>
-                <form action="/user/subscribe" method="POST">
-                    <input type="hidden" name="plan_id" value="<%= plan.id %>">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white w-full py-2 rounded transition">
-                        เลือกแผนนี้
+        <% plans.forEach(plan=> { %>
+            <div class="border border-gray-600 p-4 rounded-lg bg-gray-700 text-center">
+                <h3 class="font-bold text-lg text-white">
+                    <%= plan.name %>
+                </h3>
+                <p class="text-sm text-gray-400 mb-2">
+                    <%= plan.desc %>
+                </p>
+
+                <div class="text-xl font-bold text-cyan-400 mb-4">
+                    <% if (plan.price===0) { %>
+                        ฟรี
+                        <% } else { %>
+                            <%= plan.price %> บาท
+                                <span class="text-xs text-gray-400 font-normal block">
+                                    (ประมาณ <%= plan.usd %> USD)
+                                </span>
+                                <% } %>
+                </div>
+
+                <% if (plan.id===1 && hasUsedFreePlan) { %>
+                    <button class="bg-gray-500 text-gray-300 w-full py-2 rounded cursor-not-allowed" disabled>
+                        ใช้งานไปแล้ว
                     </button>
-                </form>
-            <% } %>
-        </div>
-    <% }) %>
+                    <% } else { %>
+                        <form action="/user/subscribe" method="POST">
+                            <input type="hidden" name="plan_id" value="<%= plan.id %>">
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-500 text-white w-full py-2 rounded transition">
+                                เลือกแผนนี้
+                            </button>
+                        </form>
+                        <% } %>
+            </div>
+            <% }) %>
 </div>
