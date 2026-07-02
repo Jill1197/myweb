@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-300 min-h-screen flex">
+    <aside class="w-64 bg-gray-800 p-6 border-r border-gray-700 hidden md:block">
+        <h2 class="text-xl font-bold text-white mb-8">User Dashboard</h2>
+        <nav class="space-y-4">
+            <a href="/user/timeline" class="block py-2 px-4 rounded bg-gray-700 text-white">หน้าหลัก</a>
+            <a href="/user/profile" class="block py-2 px-4 hover:bg-gray-700 rounded transition">แก้ไขโปรไฟล์</a>
+            <a href="/user/package" class="block py-2 px-4 hover:bg-gray-700 rounded transition">แพ็กเกจ</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1">
+        <header class="bg-gray-800 p-4 border-b border-gray-700 flex justify-end items-center gap-4">
+            <span class="text-cyan-400">สวัสดี, <%= userName %></span>
+            
+            <button onclick="openPackagePopup()" class="bg-blue-600 px-4 py-2 rounded text-sm hover:bg-blue-500 text-white">
+                จัดการแพ็กเกจ
+            </button>
+
+            <a href="/user/logout" class="bg-red-600 px-4 py-2 rounded text-sm hover:bg-red-500 text-white">ออก</a>
+        </header>
+
+        <div class="p-8">
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 class="text-xl font-bold mb-4 text-white">ยินดีต้อนรับ</h2>
+                <p>เลือกเมนูทางด้านซ้ายเพื่อจัดการข้อมูลของคุณ</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="packageModal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 w-full max-w-2xl rounded-lg p-6 border border-gray-700 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-white">&times;</button>
+            <div id="modalContent">กำลังโหลด...</div>
+        </div>
+    </div>
+
+    <script>
+        function openPackagePopup() {
+            document.getElementById('packageModal').classList.remove('hidden');
+            fetch('/user/package-content').then(res => res.text()).then(html => {
+                document.getElementById('modalContent').innerHTML = html;
+            });
+        }
+        function closeModal() { document.getElementById('packageModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<div class="flex">
+    <!-- Sidebar เมนู -->
+    <aside class="w-1/4 bg-gray-800 p-6 min-h-screen">
+        <ul class="space-y-4">
+            <li><a href="/user/profile" class="text-white">แก้ไขโปรไฟล์</a></li>
+            <li><a href="/user/package" class="text-white">แพ็กเกจสมาชิก</a></li>
+            <li><a href="/user/history" class="text-white">ประวัติการรับชม</a></li>
+            <li><a href="/user/favorites" class="text-white">วิดีโอที่ชอบ</a></li>
+            <li><a href="/user/logout" class="text-red-500">ออกจากระบบ</a></li>
+        </ul>
+    </aside>
+
+    <!-- Content Area (หน้าที่จะเปลี่ยนไปตามเมนู) -->
+    <main class="w-3/4 p-8">
+        <%- body %> <!-- ใช้การ Render ส่วนนี้เปลี่ยนไปเรื่อยๆ -->
+    </main>
+</div>

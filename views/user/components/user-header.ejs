@@ -1,0 +1,44 @@
+<header class="bg-gray-800 shadow-lg sticky top-0 z-50">
+  <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-white tracking-wider">
+      <a href="/">Jav<span class="text-cyan-400">789VK</span></a>
+    </h1>
+
+    <div class="hidden md:flex items-center gap-6">
+      <form action="/search" method="GET" class="flex items-center gap-2">
+        <input type="text" name="q" placeholder="ค้นหา..." class="px-3 py-1 bg-gray-700 text-white rounded-full focus:outline-none" />
+        <button type="submit" class="px-3 py-1 bg-cyan-500 text-white rounded-full hover:bg-cyan-600">Search</button>
+      </form>
+
+      <div class="relative">
+        <button onclick="toggleDropdown()" class="flex items-center gap-2 text-white hover:text-cyan-400 transition">
+          Account ▾
+        </button>
+        <div id="account-dropdown" class="hidden absolute right-0 mt-3 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden">
+          <a href="/user/profile" class="block px-4 py-2 hover:bg-gray-700">My Profile</a>
+          <a href="/user/history" class="block px-4 py-2 hover:bg-gray-700">My History</a>
+          <a href="/user/favorites" class="block px-4 py-2 hover:bg-gray-700">My Favorites</a>
+          <button onclick="openPackagePopup()" class="block w-full text-left px-4 py-2 hover:bg-gray-700">My Package</button>
+          <a href="/user/logout" class="block px-4 py-2 text-red-400 hover:bg-gray-700">Log out</a>
+        </div>
+      </div>
+    </div>
+
+    <button id="menu-btn" class="md:hidden text-white">☰</button>
+  </nav>
+</header>
+
+<script>
+  // Toggle Dropdown
+  function toggleDropdown() {
+    document.getElementById("account-dropdown").classList.toggle("hidden");
+  }
+
+  // Toggle Mobile Menu
+  const menuBtn = document.getElementById("menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+  menuBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("max-h-0");
+    mobileMenu.classList.toggle("max-h-[500px]");
+  });
+</script>
