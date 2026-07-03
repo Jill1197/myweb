@@ -1066,6 +1066,59 @@ app.get('/random', async (req, res) => {
     });
 });
 
+app.get('/api/v1/list-watch', (req, res) => {
+    const startId = parseInt(req.query.start_id);
+
+    if (!startId || isNaN(startId)) {
+        return res.status(400).json({ error: 'กรุณาระบุ start_id ที่ถูกต้อง' });
+    }
+
+    // 1. ดึงข้อมูลจากมากไปน้อย (ID ต่ำกว่าปัจจุบัน) ตามปกติ
+    const query1 = `
+        SELECT id, topic, image_embed, tag 
+        FROM media 
+        WHERE id < ? 
+        ORDER BY id DESC 
+        LIMIT 8
+    `;
+
+    db.all(query1, [startId], (err, rows) => {
+        if (err) {
+            console.error("SQLite Error:", err.message);
+            return res.status(500).json({ error: 'เซิร์ฟเวอร์เกิดข้อผิดพลาด' });
+        }
+
+        // 2. ตรวจสอบ: ถ้าได้ข้อมูลครบ 8 คลิปแล้ว ให้ส่งกลับหน้าบ้านได้เลย
+        if (rows.length === 8) {
+            return res.json(rows);
+        }
+
+        // 3. ถ้าข้อมูลได้ไม่ครบ 8 (เช่น ดู ID ต่ำ ๆ แล้วข้างล่างมันว่าง)
+        // ให้ไปดึงคลิปที่ ID มากกว่า (คลิปใหม่ ๆ ด้านบนตาราง) มาเติมให้เต็ม
+        const needMore = 8 - rows.length; // คำนวณว่ายังขาดอีกกี่คลิปถึงจะครบ 8
+        const query2 = `
+            SELECT id, topic, image_embed, tag 
+            FROM media 
+            WHERE id > ? 
+            ORDER BY id ASC 
+            LIMIT ?
+        `;
+
+        db.all(query2, [startId, needMore], (err2, backupRows) => {
+            if (err2) {
+                console.error("SQLite Backup Error:", err2.message);
+                return res.json(rows); // ถ้าเอ๋อ อย่างน้อยก็ส่งตัวที่มีเท่าเดิมกลับไป
+            }
+
+            // 4. เอาข้อมูลชุดแรก มาประกอบร่างกับข้อมูลชุดสำรอง (สลับเรียงให้สวยงาม)
+            const finalResult = [...rows, ...backupRows];
+            
+            // ส่งข้อมูลที่เติมเต็ม 8 รายการกลับไปให้หน้าบ้าน
+            return res.json(finalResult);
+        });
+    });
+});
+
 app.get('/api/v1/random', async (req, res) => {
     let value = parseInt(req.query.value) || 1;
     if (value > 10) value = 10;
