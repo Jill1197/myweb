@@ -2,12 +2,18 @@
 <html lang="th">
 
 <head>
-  <title>ดู <%= media.topic %> ออนไลน์ดูฟรี | JAV789VK</title>
-  <meta name="description" content="รับชมวิดีโอ <%= media.topic %> หมวดหมู่ <%= media.tag || '' %> ดูออนไลน์ฟรี" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <% const topMedia = (typeof mediaList !== 'undefined' && mediaList.length > 0) ? mediaList[0] : null; %>
+
+  <title>ดู <%= topMedia ? topMedia.topic : tag %> ออนไลน์ดูฟรี | JAV789VK</title>
+  <meta name="description" content="รับชมวิดีโอ <%= topMedia ? topMedia.topic : tag %> หมวดหมู่ <%= tag || '' %> ดูออนไลน์ฟรี" />
   
-  <link rel="canonical" href="https://www.jav789vk.com/watch?id=<%= media.id %>" />
+  <link rel="canonical" href="https://www.jav789vk.com/<%= topMedia ? 'watch?id=' + topMedia.id : 'tag/' + encodeURIComponent(tag) %>" />
   
   <meta name="robots" content="index, follow" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-900 text-gray-300 font-sans">
@@ -58,8 +64,8 @@
             <% } %>
 
             <%
-              const start = Math.max(1, currentPage - 1);
-              const end = Math.min(totalPages, currentPage + 1);
+                const start = Math.max(1, currentPage - 1);
+                const end = Math.min(totalPages, currentPage + 1);
             %>
 
             <% if (start > 1) { %>
@@ -105,4 +111,5 @@
     </div>
   </main>
 </body>
+
 </html>
