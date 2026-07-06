@@ -3,3 +3,6 @@ server.log
 access.log
 .env
 essential-access.log
+data.db-shm
+data.db-wal
+portainer/*

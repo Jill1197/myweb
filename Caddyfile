@@ -8,6 +8,16 @@ jav789vk.com, www.jav789vk.com {
     tls MorrisJill1197@proton.me
 }
 
+// for portainer dashboard
+dev.jav789vk.com {
+    reverse_proxy portainer:9000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
+    tls internal
+}
+
 # บล็อกสำหรับระบบ API หลังบ้าน
 api.jav789vk.com {
     reverse_proxy video-streaming-app:4000 {
