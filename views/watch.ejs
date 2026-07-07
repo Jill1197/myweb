@@ -8,7 +8,8 @@
 
   <!-- SEO: ใส่ Title และ Meta Description ให้ดึงคีย์เวิร์ดจากตัวแปร -->
   <title>ดู <%= media.topic %> ออนไลน์ดูฟรี | JAV789VK</title>
-  <link rel="canonical" href="https://www.jav789vk.com/video/<%= media.id %>" />
+  <!-- ปรับแท็ก canonical ในหน้าดูวิดีโอให้จับคู่กับโครงสร้าง Express ด้านบน -->
+  <link rel="canonical" href="https://www.jav789vk.com/watch/<%= media.id %>/<%= encodeURIComponent(media.topic.replace(/ /g, '-').replace(/\//g, '')) %>" />
   <meta name="description"
     content="รับชมวิดีโอ <%= media.topic %> หมวดหมู่ <%= media.tag || '' %> ดูออนไลน์ฟรี คมชัด ไม่สะดุด อัปเดตใหม่ล่าสุดที่นี่" />
   <meta name="keywords" content="<%= media.tag %>, ดูวิดีโอ, ดู<%= media.topic %>" />

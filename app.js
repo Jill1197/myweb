@@ -252,34 +252,34 @@ app.get('/sitemap.xml', (req, res) => {
     db.all("SELECT id, topic FROM media ORDER BY id DESC", [], (err, mediaList) => {
         if (err) {
             console.error("❌ [Sitemap DB Error - Media]:", err.message);
-            mediaList = []; // ป้องกันกรณีดึงพัง ให้เป็นอาเรย์ว่าง
+            mediaList = [];
         }
 
         // 2. ดึงข้อมูลแท็กทั้งหมดจากตาราง tags เพื่อเอามาสร้างลิงก์หมวดหมู่
         db.all("SELECT name FROM tags", [], (err2, tagList) => {
             if (err2) {
                 console.error("❌ [Sitemap DB Error - Tags]:", err2.message);
-                tagList = []; // ป้องกันกรณีดึงพัง ให้เป็นอาเรย์ว่าง
+                tagList = [];
             }
 
             let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
             xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n`;
             
             // ----------------------------------------------------
-            // 🔸 ส่วนที่ 1: หน้าหลัก Static ภายในเว็บของคุณ (บอทเข้าได้ปกติ)
+            // 🔸 ส่วนที่ 1: หน้าหลัก Static ภายในเว็บของคุณ
             // ----------------------------------------------------
             xml += `  <url><loc>https://jav789vk.com/</loc><priority>1.00</priority></url>\n`;
             xml += `  <url><loc>https://jav789vk.com/new-videos</loc><priority>0.80</priority></url>\n`;
             xml += `  <url><loc>https://jav789vk.com/most-popular</loc><priority>0.80</priority></url>\n`;
 
             // ----------------------------------------------------
-            // 🔸 ส่วนที่ 2: ลิงก์ Tags หมวดหมู่ 
-            // (ปลดล็อกใน robots.txt แล้ว เพื่อให้ Google มาเก็บข้อมูลหน้าแท็กไปทำอันดับ)
+            // 🔸 ส่วนที่ 2: ลิงก์ Tags หมวดหมู่
             // ----------------------------------------------------
             if (tagList && tagList.length > 0) {
                 tagList.forEach(tagItem => {
                     if (tagItem && tagItem.name) {
                         const tagName = tagItem.name.trim();
+                        // ใช้ encodeURIComponent ครอบ เพื่อให้รองรับภาษาไทยใน XML อย่างปลอดภัย
                         xml += `  <url>\n    <loc>https://jav789vk.com/tag/${encodeURIComponent(tagName)}</loc>\n    <priority>0.80</priority>\n  </url>\n`;
                     }
                 });
@@ -287,23 +287,20 @@ app.get('/sitemap.xml', (req, res) => {
 
             // ----------------------------------------------------
             // 🔸 ส่วนที่ 3: ลิงก์วิดีโอสำหรับเข้าดู (/watch/:id/:topic)
-            // แปลงรูปแบบ URL เหมือนกับโค้ดหน้าหลักของคุณเป๊ะ บอทไม่หลงทางแน่นอน
             // ----------------------------------------------------
             if (mediaList && mediaList.length > 0) {
                 mediaList.forEach(mediaItem => {
                     if (mediaItem && mediaItem.id) {
-                        // เปลี่ยนช่องว่างเป็นขีด (-) ลบเครื่องหมายสแลช (/) และอักขระพิเศษออก
+                        // 🌟 ปรับปรุง: ใช้การ Replace รูปแบบเดียวกับตัวดัก 301 ในหน้าหลักเป๊ะๆ 
+                        // และถอดการจำกัดความยาว 100 ตัวอักษรออกเพื่อให้ตรงกับ URL จริงปลายทาง
                         let safeTopic = (mediaItem.topic || '')
                             .replace(/ /g, '-')
-                            .replace(/\//g, '')
-                            .replace(/[~–+]/g, ''); 
+                            .replace(/\//g, '');
                         
-                        // ควบคุมความยาวของชื่อไม่ให้ยาวเกินไป
-                        if (safeTopic.length > 100) {
-                            safeTopic = safeTopic.substring(0, 100);
-                        }
+                        // ฟังก์ชันป้องกันเครื่องหมายพิเศษใน XML พังพ่น Error
+                        const escapedTopic = encodeURIComponent(safeTopic);
 
-                        xml += `  <url>\n    <loc>https://jav789vk.com/watch/${mediaItem.id}/${encodeURIComponent(safeTopic)}</loc>\n    <priority>0.70</priority>\n  </url>\n`;
+                        xml += `  <url>\n    <loc>https://jav789vk.com/watch/${mediaItem.id}/${escapedTopic}</loc>\n    <priority>0.70</priority>\n  </url>\n`;
                     }
                 });
             }
@@ -453,7 +450,7 @@ app.get('/watch/:id/:topic?', (req, res) => {
   if (!id || isNaN(id)) {
     return res.status(404).render('status', { 
         tag: '404 - ไม่พบวิดีโอ',
-        allTags: [] // ส่งค่าว่างไปเผื่อ header
+        allTags: [] 
     });
   }
 
@@ -466,19 +463,25 @@ app.get('/watch/:id/:topic?', (req, res) => {
       });
     }
 
+    // 🌟 ส่วนที่เพิ่มเข้าไปใหม่: ถ้าไม่มีชื่อวิดีโอต่อท้าย (เช่น เข้าผ่าน /watch/1017) ให้ดีดไปหน้ายาวทันที
+    if (!req.params.topic) {
+      const safeTopic = encodeURIComponent(row.topic.replace(/ /g, '-').replace(/\//g, ''));
+      return res.redirect(301, `/watch/${id}/${safeTopic}`);
+    }
+
     // 3. ดึงวิดีโอแนะนำ
     db.all("SELECT * FROM media WHERE id != ? ORDER BY RANDOM() LIMIT 10", [id], (err2, randoms) => {
       
-      // 4. ดึงคีย์เวิร์ดแท็ก (เพื่อมาโชว์ใน Header ของหน้า status)
+      // 4. ดึงคีย์เวิร์ดแท็ก
       db.all("SELECT DISTINCT tag FROM media WHERE tag IS NOT NULL AND tag != '' LIMIT 15", [], (err3, tagRows) => {
         
-        // ถ้าเกิด Error ในการดึง tag ให้ใช้ array ว่าง
         let allTags = [];
         if (!err3 && tagRows) {
-            // โค้ดประมวลผล tags เดิมของคุณ...
+            // โค้ดประมวลผล tags เดิมของคุณ (ถ้ามี)
+            allTags = tagRows; 
         }
 
-        // กรณีปกติ: เรนเดอร์หน้า watch
+        // กรณีปกติ: เรนเดอร์หน้า watch ตัวเต็ม
         res.render('watch', {
           media: row,
           randomVideos: randoms || [],
@@ -737,6 +740,7 @@ app.get('/tags/delete/:id', isAdmin, (req, res) => {
 });
 
 // Filter media ตาม tag
+// แก้ไขโค้ดบล็อก app.get('/tag/:tag', ...) ใน app.js ให้เป็นแบบนี้
 app.get('/tag/:tag', (req, res) => {
   const tag = decodeURIComponent(req.params.tag);
   const page = parseInt(req.query.page) || 1;
