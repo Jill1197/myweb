@@ -9,7 +9,8 @@
   <!-- SEO: ใส่ Title และ Meta Description ให้ดึงคีย์เวิร์ดจากตัวแปร -->
   <title>ดู <%= media.topic %> ออนไลน์ดูฟรี | JAV789VK</title>
   <!-- ปรับแท็ก canonical ในหน้าดูวิดีโอให้จับคู่กับโครงสร้าง Express ด้านบน -->
-  <link rel="canonical" href="https://www.jav789vk.com/watch/<%= media.id %>/<%= encodeURIComponent(media.topic.replace(/ /g, '-').replace(/\//g, '')) %>" />
+  <link rel="canonical"
+    href="https://www.jav789vk.com/watch/<%= media.id %>/<%= encodeURIComponent(media.topic.replace(/ /g, '-').replace(/\//g, '')) %>" />
   <meta name="description"
     content="รับชมวิดีโอ <%= media.topic %> หมวดหมู่ <%= media.tag || '' %> ดูออนไลน์ฟรี คมชัด ไม่สะดุด อัปเดตใหม่ล่าสุดที่นี่" />
   <meta name="keywords" content="<%= media.tag %>, ดูวิดีโอ, ดู<%= media.topic %>" />
@@ -154,8 +155,15 @@
                 ข้าม
               </button>
 
-              <iframe id="apiVideo" src="" allowfullscreen
+              <!-- <iframe id="apiVideo" src="" allowfullscreen
                 class="mainVideo absolute inset-0 w-full h-full z-10 rounded-xl" style="display:none;"></iframe>
+              -->
+
+              <iframe id="apiVideo" src="" allowfullscreen
+                class="mainVideo absolute inset-0 w-full h-full z-10 rounded-xl" style="display:none;"
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms">
+                <!-- สังเกตว่าเราไม่ได้ใส่ allow-top-navigation -->
+              </iframe>
             </div>
 
             <div class="flex justify-center">
